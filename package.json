@@ -1,0 +1,13 @@
+{
+  "name": "arogya-mitra",
+  "version": "0.1.0",
+  "description": "Telugu and English, audio-first app to find nearby doctors, clinics and pharmacies. Frontend only, localStorage.",
+  "private": true,
+  "scripts": {
+    "start": "node server.js 5500",
+    "dev": "node server.js 5501"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
