@@ -1,5 +1,4 @@
 @echo off
-rem Starts the app on http://localhost:5500 and opens it in the default browser.
+rem Starts the app (default http://localhost:3000, next free port if busy) and opens the browser.
 cd /d "%~dp0"
-start "" http://localhost:5500
-node server.js 5500
+node server.js 3000 --open

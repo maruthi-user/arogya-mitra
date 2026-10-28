@@ -4,8 +4,9 @@
   "description": "Telugu and English, audio-first app to find nearby doctors, clinics and pharmacies. Frontend only, localStorage.",
   "private": true,
   "scripts": {
-    "start": "node server.js 5500",
-    "dev": "node server.js 5501"
+    "start": "node server.js 3000",
+    "dev": "node server.js 3000 --open",
+    "start:80": "node server.js 80"
   },
   "engines": {
     "node": ">=16"

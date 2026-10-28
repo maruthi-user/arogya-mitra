@@ -10,13 +10,14 @@ Needs only Node.js 16 or newer. There are no packages to install.
 npm start
 ```
 
-Then open http://localhost:5500. Other ways to start it:
+It starts on http://localhost:3000. If something else already uses port 3000 (on IPv4 or IPv6), it moves to 3001, 3002 and so on, and prints the exact address to open. Other ways to start it:
 
-- `npm run dev` serves on http://localhost:5501.
-- `node server.js 5000` serves on any port you give (use this if 5500 is busy).
+- `npm run dev` does the same and opens the browser for you.
+- `npm run start:80` serves on http://localhost with no port number. It needs port 80 to be free.
+- `node server.js 5000` serves on any port you give.
 - Double-click `start.bat` (Windows) to start the server and open the browser.
 
-Run it through localhost rather than double-clicking `index.html`: voice input, recorded audio and the intro video work more reliably over http. Use Chrome or Edge for the best voice support. To try it on a phone, connect both to the same Wi-Fi and open `http://<your-PC-IP>:5500`. Note that browsers allow the microphone only on localhost or https, so voice input on a phone needs an https tunnel.
+Run it through localhost rather than double-clicking `index.html`: voice input, recorded audio and the intro video work more reliably over http. Use Chrome or Edge for the best voice support. To try it on a phone, connect both to the same Wi-Fi and open `http://<your-PC-IP>:<port>`. Note that browsers allow the microphone only on localhost or https, so voice input on a phone needs an https tunnel.
 
 ## Git
 

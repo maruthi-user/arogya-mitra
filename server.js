@@ -2,9 +2,13 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const net = require('net');
 
 const root = __dirname;
-const port = Number(process.argv[2] || process.env.PORT || 5500);
+const args = process.argv.slice(2);
+const openBrowser = args.includes('--open');
+const firstPort = Number(args.find(a => /^\d+$/.test(a)) || process.env.PORT || 3000);
+const maxTries = 20;
 
 const types = {
   '.html': 'text/html; charset=utf-8',
@@ -49,16 +53,44 @@ const server = http.createServer((req, res) => {
   });
 });
 
+/* Another app can hold only the IPv4 or only the IPv6 side of "localhost", and the OS still lets us bind the
+   other side. Then http://localhost:PORT would open the other app. So probe both sides before choosing a port. */
+function answers(host, p) {
+  return new Promise(resolve => {
+    const s = net.connect({ host, port: p });
+    s.setTimeout(400);
+    s.on('connect', () => { s.destroy(); resolve(true); });
+    s.on('timeout', () => { s.destroy(); resolve(false); });
+    s.on('error', () => resolve(false));
+  });
+}
+
+async function isBusy(p) {
+  const [v4, v6] = await Promise.all([answers('127.0.0.1', p), answers('::1', p)]);
+  return v4 || v6;
+}
+
 server.on('error', err => {
-  if (err.code === 'EADDRINUSE') {
-    console.error('Port ' + port + ' is already in use. Try: node server.js ' + (port + 1));
+  if (err.code === 'EACCES') {
+    console.error('Not allowed to use that port. Ports below 1024 may need an administrator terminal.');
   } else {
     console.error(err.message);
   }
   process.exit(1);
 });
 
-server.listen(port, () => {
-  console.log('Arogya Mitra running at http://localhost:' + port);
+server.on('listening', () => {
+  const url = 'http://localhost' + (port === 80 ? '' : ':' + port);
+  console.log('Arogya Mitra running at ' + url);
   console.log('Press Ctrl+C to stop.');
+  if (openBrowser) require('child_process').exec('start "" ' + url);
 });
+
+let port = firstPort;
+(async () => {
+  for (let i = 0; i < maxTries && await isBusy(port); i++) {
+    console.log('Port ' + port + ' is already in use, trying ' + (port + 1) + '...');
+    port += 1;
+  }
+  server.listen(port);
+})();
