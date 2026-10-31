@@ -1,82 +1,93 @@
-# ఆరోగ్య మిత్ర (Arogya Mitra)
+# Arogya Mitra
 
-Telugu, audio-first app to find nearby doctors, clinics and pharmacies. Frontend only: plain HTML, CSS and JavaScript, with all data in the browser's `localStorage`. No build step and no server.
+Responsive Telugu/English care application with a JavaScript frontend and a Spring Boot backend. Patient guest access, provider registration/review/activation, provider/admin login, appointment workflows, pharmacy inquiries and email notifications use the backend and database. Demo mode and sample-profile selection have been removed from the application.
 
-## Run on localhost
+## Start locally
 
-Needs only Node.js 16 or newer. There are no packages to install.
+Prerequisites: Node 18+, JDK 17+, Maven. Use npm instead of npm.cmd outside Windows.
 
-```
-npm start
-```
+**1. Start the frontend from the repository root:**
 
-It starts on http://localhost:3000. If something else already uses port 3000 (on IPv4 or IPv6), it moves to 3001, 3002 and so on, and prints the exact address to open. Other ways to start it:
-
-- `npm run dev` does the same and opens the browser for you.
-- `npm run start:80` serves on http://localhost with no port number. It needs port 80 to be free.
-- `node server.js 5000` serves on any port you give.
-- Double-click `start.bat` (Windows) to start the server and open the browser.
-
-Run it through localhost rather than double-clicking `index.html`: voice input, recorded audio and the intro video work more reliably over http. Use Chrome or Edge for the best voice support. To try it on a phone, connect both to the same Wi-Fi and open `http://<your-PC-IP>:<port>`. Note that browsers allow the microphone only on localhost or https, so voice input on a phone needs an https tunnel.
-
-## Git
-
-This folder is a git repository on branch `main`. `.gitignore` skips `node_modules`, logs and editor folders. `.gitattributes` normalizes line endings and marks audio and video as binary. Recorded voice files (`assets/audio/te|en/*.mp3`) and the intro videos are tracked, so keep them small.
-
-```
-git add .
-git commit -m "Initial commit"
-git remote add origin <your-repo-url>
-git push -u origin main
+```powershell
+npm.cmd start
 ```
 
-## What works
+Open its printed URL. If port 3000 is occupied, the server chooses another port. The development server proxies /api to http://127.0.0.1:9090. Set BACKEND_URL if your local backend uses another address.
 
-- Intro (first launch only): plays `assets/intro-te.mp4` if you add it, otherwise a 4-step narrated tour. Replay from the Help button.
-- Village setup, symptom picker, nearby providers sorted by open status and distance, call buttons (`tel:`).
-- Booking: pick today or tomorrow and a time slot, confirm, see and cancel in My bookings.
-- Medicine search: which pharmacy has it, with a prescription notice.
-- Emergency (108) screen, reachable from home and from the danger-sign tiles.
-- Voice search (Chrome/Edge, te-IN): say a symptom, medicine or "108".
-- Provider view (Settings > provider view): toggle open/closed, pharmacy stock, and mark bookings done or cancelled. This is how you test the other side on one device.
+**2. Start local email capture:**
 
-## Languages
-
-Telugu and English. The user picks on first launch, and can change it from the home screen link or Settings. The choice is saved in localStorage. All text, voice scripts, intro tour and demo names exist in both languages: UI text in `js/strings.js` (`STR_TE`, `STR_EN`, `VOICE_TE`, `VOICE_EN`), and names in `js/data.js` (`te` / `en` fields, `EN_NAMES`). To add a language, add an entry to `LANGS` in `js/strings.js`.
-
-## Voice and audio
-
-Every screen speaks a script in the chosen language (see `VOICE_TE` and `VOICE_EN` in `js/strings.js`).
-
-1. If `assets/audio/<lang>/<key>.mp3` exists (for example `assets/audio/te/home.mp3` or `assets/audio/en/home.mp3`), that recorded voice plays. Recorded human voice is the recommended option.
-2. Otherwise the browser's text-to-speech is used (te-IN or en-IN). If the device has no voice for that language, Settings shows a notice.
-3. Voice input also follows the chosen language. Voice search understands both Telugu and English words in either mode.
-4. The intro video is `assets/intro-te.mp4` or `assets/intro-en.mp4`; without it the narrated tour plays.
-
-Audio keys: `intro, step1..step4, setup, home, symptoms, providers, meds, medResults, book, confirmed, bookings, emergency, settings, dash`.
-
-## Data
-
-Stored under the localStorage key `arogyaMitra.v1`: settings, providers, pharmacies (with stock) and bookings. Demo providers, shops and phone numbers are in `js/data.js` and are fake. Settings > delete data resets everything.
-
-## Files
-
-```
-index.html
-server.js       local dev server (npm start)
-package.json    npm scripts, no dependencies
-start.bat       Windows launcher
-css/styles.css
-js/strings.js   Telugu text and voice scripts
-js/data.js      villages, symptoms, medicines, demo providers
-js/storage.js   localStorage wrapper
-js/voice.js     audio playback, TTS, speech recognition
-js/app.js       screens, navigation, actions
-assets/audio/te, assets/audio/en   optional recorded voice files
+```powershell
+cd backend
+docker compose up -d mailpit
 ```
 
-## Known limits (frontend-only)
+Alternatively run a native Mailpit binary with SMTP bound to 127.0.0.1:1025 and its UI to 127.0.0.1:8025. During this implementation, the official native release was downloaded under .tools/mailpit/ (ignored by Git). Its startup command from the project root is:
 
-- Bookings are visible only on the device that created them. Sharing between patient and provider needs a backend.
-- No SMS or reminders; they need a server.
-- Medicine stock and provider hours are not real until providers update them.
+```powershell
+.\.tools\mailpit\mailpit.exe --smtp 127.0.0.1:1025 --listen 127.0.0.1:8025 --disable-version-check
+```
+
+Mailpit captures mail locally; it does not deliver to real inboxes. Open http://localhost:8025 to read acknowledgment, approval/password-setup, rejection and appointment-request emails. Delivery failures remain visible in the admin notification queue.
+
+**3. Create the first admin and start the backend:**
+
+In a new PowerShell terminal, from the root:
+
+```powershell
+$env:ADMIN_USERNAME='your-admin-username'
+$env:ADMIN_EMAIL='your-admin-email@example.test'
+$adminSecret=Read-Host 'Admin password (12-72 characters)' -AsSecureString
+$env:ADMIN_PASSWORD=[System.Net.NetworkCredential]::new('', $adminSecret).Password
+$env:FRONTEND_URL='http://localhost:3000' # use the actual printed frontend URL
+cd backend
+mvn spring-boot:run
+```
+
+There is no default administrator password. The initial administrator is created once and stored with a BCrypt hash. On subsequent starts, existing administrator credentials remain unchanged; remove ADMIN_PASSWORD from the runtime environment after initial setup. Do not commit passwords or SMTP credentials.
+
+The backend listens on http://127.0.0.1:9090 and stores local H2 data under backend/data/. Always start it from backend/ to retain that path. Existing legacy demo records are preserved but excluded from the operational directory; test fixtures exist only under backend/src/test/resources/.
+
+On Windows, you can also run `.\start-backend.cmd` from the repository root after setting these environment variables. It selects the backend working directory and launches through Maven. Local development needs no cloud account or SSH keys. For stale VS Code dependency errors, see [IDE troubleshooting](backend/README.md#local-startup-and-ide-dependency-errors).
+
+## Use the application
+
+- **Patient:** enter directly without an account. A server-owned guest session scopes appointments and inquiries. Provide name/contact phone when booking. Cookie clearing, session expiry, or switching away from a guest session may remove access; guest recovery is not yet implemented.
+- **Provider:** apply with personal/practice/contact details; review before submission. An admin approves or rejects the application. Approved applicants receive a one-use password link, set a password, then sign in and configure schedule/services/fee. Approval is not professional credential verification.
+- **Admin:** sign in with the bootstrapped account. Review applications in a confirmation dialog, enter activation instructions or a rejection reason, manage pharmacies/stock, follow inquiries, inspect audit history and retry failed emails.
+
+The directory starts empty. No fabricated providers, inventory, appointments or dashboard metrics are supplied. Village proximity is labelled as such; it is not a calculated road distance. Ambulance assistance is a direct emergency-call action; no dispatch integration is claimed.
+
+## Verify
+
+```powershell
+npm.cmd test
+npm.cmd run build
+cd backend
+mvn test
+```
+
+Tests use in-memory databases. Security tests cover CSRF, role restrictions, forged IDs, approval/activation, token reuse, password-reset session invalidation, guest booking ownership and notification failure/retry. The live API client supports a full isolated workflow with real SMTP delivery to Mailpit; see [backend testing](backend/README.md).
+
+## Structure
+
+```text
+frontend/src/
+  app/                 routing, server session state and action wiring
+  pages/               landing, patient, provider, auth and admin interfaces
+  components/          shared UI, forms, tables, navigation and review dialogs
+  features/            account workflows, appointments, provider search and voice
+  services/api/        session-aware HTTP client and operational API methods
+  styles/              base/component styles and responsive product design
+frontend/public/assets/images/arogya-mitra-logo.png
+backend/src/main/java/in/arogyamitra/
+  security/, auth/, registration/, admin/, notification/
+  patient/, provider/, booking/, pharmacy/, shared/, config/
+backend/api/           Postman and HTTP examples
+backend/scripts/       API verification client
+```
+
+## Deployment readiness
+
+The implementation runs locally and has not been deployed or independently security/load/accessibility audited. Publish frontend/dist only after deploying the backend and configuring API routing (prefer a same-origin /api reverse proxy). Set FRONTEND_URL to the public HTTPS URL, configure real SMTP, secure cookies, a production database, backups, monitoring and admin recovery. Static hosting alone cannot run these workflows.
+
+Official professional-registration verification, real ambulance dispatch, guest recovery, external inventory feeds and a conversational AI model are not implemented integrations. See [release requirements](docs/implementation-roadmap.md), [architecture](docs/architecture.md), [frontend](frontend/README.md) and [backend](backend/README.md).

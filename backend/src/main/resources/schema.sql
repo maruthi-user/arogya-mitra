@@ -1,0 +1,78 @@
+CREATE TABLE IF NOT EXISTS entities (
+ id VARCHAR(80) PRIMARY KEY,
+ kind VARCHAR(20) NOT NULL,
+ document TEXT NOT NULL
+);
+ALTER TABLE entities ADD COLUMN IF NOT EXISTS sample_data BOOLEAN DEFAULT FALSE NOT NULL;
+CREATE TABLE IF NOT EXISTS patients (
+ id VARCHAR(80) PRIMARY KEY,
+ name VARCHAR(40) NOT NULL,
+ village VARCHAR(40) NOT NULL,
+ language VARCHAR(10) NOT NULL
+);
+CREATE TABLE IF NOT EXISTS bookings (
+ id VARCHAR(80) PRIMARY KEY,
+ pid VARCHAR(80) NOT NULL REFERENCES entities(id),
+ booking_date VARCHAR(10) NOT NULL,
+ booking_time VARCHAR(5) NOT NULL,
+ status VARCHAR(20) NOT NULL,
+ document TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS booking_slot ON bookings(pid, booking_date, booking_time, status);
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS expires_at BIGINT DEFAULT 0 NOT NULL;
+ALTER TABLE patients ADD COLUMN IF NOT EXISTS phone VARCHAR(20) DEFAULT '' NOT NULL;
+
+CREATE TABLE IF NOT EXISTS accounts (
+ id VARCHAR(80) PRIMARY KEY,
+ username VARCHAR(80) NOT NULL UNIQUE,
+ email VARCHAR(254) NOT NULL UNIQUE,
+ password_hash VARCHAR(255),
+ role VARCHAR(20) NOT NULL,
+ subject_id VARCHAR(80) NOT NULL,
+ display_name VARCHAR(100) NOT NULL,
+ active BOOLEAN DEFAULT FALSE NOT NULL,
+ created_at BIGINT NOT NULL
+);
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS credential_version INTEGER DEFAULT 0 NOT NULL;
+CREATE TABLE IF NOT EXISTS provider_applications (
+ id VARCHAR(80) PRIMARY KEY,
+ username VARCHAR(80) NOT NULL UNIQUE,
+ email VARCHAR(254) NOT NULL UNIQUE,
+ status VARCHAR(30) NOT NULL,
+ document TEXT NOT NULL,
+ submitted_at BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS activation_tokens (
+ token_hash VARCHAR(64) PRIMARY KEY,
+ account_id VARCHAR(80) NOT NULL REFERENCES accounts(id),
+ expires_at BIGINT NOT NULL,
+ used BOOLEAN DEFAULT FALSE NOT NULL
+);
+CREATE TABLE IF NOT EXISTS email_outbox (
+ id VARCHAR(80) PRIMARY KEY,
+ recipient VARCHAR(254) NOT NULL,
+ subject VARCHAR(255) NOT NULL,
+ body TEXT NOT NULL,
+ status VARCHAR(20) NOT NULL,
+ attempts INTEGER DEFAULT 0 NOT NULL,
+ next_attempt BIGINT NOT NULL,
+ updated_at BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS audit_events (
+ id VARCHAR(80) PRIMARY KEY,
+ actor_id VARCHAR(80) NOT NULL,
+ action VARCHAR(80) NOT NULL,
+ resource_id VARCHAR(80) NOT NULL,
+ detail TEXT NOT NULL,
+ created_at BIGINT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS service_requests (
+ id VARCHAR(80) PRIMARY KEY,
+ patient_id VARCHAR(80) NOT NULL REFERENCES patients(id),
+ pharmacy_id VARCHAR(80) NOT NULL REFERENCES entities(id),
+ medicine_id VARCHAR(80) NOT NULL,
+ message VARCHAR(500) NOT NULL,
+ status VARCHAR(20) NOT NULL,
+ created_at BIGINT NOT NULL
+);
+                        

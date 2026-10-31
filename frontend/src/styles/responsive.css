@@ -1,0 +1,14 @@
+/* Role-specific shells share the same source and actions at every viewport size. */
+#app{width:100%;max-width:100%;min-height:100dvh}.content{width:100%;max-width:720px;margin-inline:auto}.top{width:100%}.nav{max-width:100%}
+[data-role="provider"] .content{max-width:1280px}.intro{max-width:720px;width:100%;margin-inline:auto}.btn{min-width:0}.actions{flex-wrap:wrap}
+@media(min-width:768px){
+  #app{max-width:1440px}.content{padding:24px 24px 108px}.grid2{gap:16px}.provider-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.nav button{min-height:68px}
+  .top{padding:12px 24px}.intro{padding:36px 24px}.card{padding:20px}
+}
+@media(min-width:1024px){
+  [data-role="provider"]{padding-left:220px;position:relative}
+  [data-role="provider"] .nav{position:fixed;left:0;top:0;bottom:0;transform:none;width:220px;display:flex;flex-direction:column;justify-content:flex-start;padding:32px 12px;border-top:0;border-right:1px solid var(--line);gap:12px}
+  [data-role="provider"] .nav button{flex:none;min-height:56px;border-radius:12px;font-size:16px;padding:12px}
+  [data-role="provider"] .content{padding-bottom:32px}.provider-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:400px){.top{gap:2px;padding:8px 6px}.top h1{font-size:17px}.content{padding-inline:10px}.mode-notice{font-size:14px}.search-bar .btn{width:100%}.nav button{font-size:12px}.card-head{flex-wrap:wrap}}

@@ -1,0 +1,27 @@
+import { request } from './http-client.js';
+export const apiAdapter = {
+    session:()=>request('/auth/session'),
+    guest:language=>request('/auth/guest','POST',{language}),
+    login:input=>request('/auth/login','POST',input),
+    logout:()=>request('/auth/logout','POST',{}),
+    register:input=>request('/auth/register','POST',input),
+    activate:input=>request('/auth/activate','POST',input),
+    requestSetup:email=>request('/auth/request-setup','POST',{email}),
+    patientProfile:(id,input)=>request('/patients/'+encodeURIComponent(id),'PATCH',input),
+    applications:()=>request('/admin/applications'),
+    review:(id,input)=>request('/admin/applications/'+encodeURIComponent(id)+'/review','POST',input),
+    notifications:()=>request('/admin/notifications'),
+    retryNotification:id=>request('/admin/notifications/'+encodeURIComponent(id)+'/retry','POST',{}),
+    audit:()=>request('/admin/audit'),
+    createPharmacy:input=>request('/admin/pharmacies','POST',input),
+    medicineRequests:()=>request('/medicine-requests'),
+    requestMedicine:input=>request('/medicine-requests','POST',input),
+    updateMedicineRequest:(id,status)=>request('/medicine-requests/'+encodeURIComponent(id),'PATCH',{status}),
+    load: () => request('/state'),
+    slots:(id,date)=>request('/providers/'+encodeURIComponent(id)+'/slots?date='+encodeURIComponent(date)),
+    book: input => request('/bookings', 'POST', input),
+    status: (id, status, actor) => request('/bookings/' + encodeURIComponent(id), 'PATCH', { status, actor }),
+    profile: (id, input) => request('/providers/' + encodeURIComponent(id) + '/profile', 'PATCH', input),
+    open: (id, open) => request('/entities/' + encodeURIComponent(id) + '/open', 'PATCH', { open }),
+    stock: (id, medicine, available) => request('/pharmacies/' + encodeURIComponent(id) + '/stock', 'PATCH', { medicine, available })
+  };

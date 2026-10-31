@@ -1,0 +1,60 @@
+# VS Code REST Client examples. Preserve its cookie jar.
+# Re-run the csrf request before EVERY POST/PATCH, including after login/logout/guest.
+# Use your own credentials and IDs. No default accounts or passwords are supplied.
+@baseUrl = http://127.0.0.1:9090/api
+@providerId = REPLACE_FROM_APPROVED_APPLICATION
+@patientId = REPLACE_FROM_GUEST_RESPONSE
+@bookingId = REPLACE_FROM_BOOKING_RESPONSE
+@date = REPLACE_WITH_TOMORROW_YYYY-MM-DD
+
+### Fetch a fresh session-bound CSRF token
+# @name csrf
+GET {{baseUrl}}/auth/csrf
+
+### Current authenticated identity
+GET {{baseUrl}}/auth/session
+
+### Guest patient entry (no login)
+POST {{baseUrl}}/auth/guest
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.$.token}}
+
+{"language":"en"}
+
+### Save guest contact details before booking
+PATCH {{baseUrl}}/patients/{{patientId}}
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.$.token}}
+
+{"name":"Patient name","phone":"9876543210","village":"rama"}
+
+### Public approved/activated providers
+GET {{baseUrl}}/providers
+
+### Real slot availability
+GET {{baseUrl}}/providers/{{providerId}}/slots?date={{date}}
+
+### Request appointment as current guest
+POST {{baseUrl}}/bookings
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.$.token}}
+
+{"pid":"{{providerId}}","date":"{{date}}","time":"10:00","reason":"Consultation"}
+
+### Own appointment records
+GET {{baseUrl}}/bookings
+
+### Use the application login UI or Postman collection to establish a provider session.
+### Accept is only allowed for the currently signed-in assigned provider.
+POST {{baseUrl}}/bookings/{{bookingId}}/accept
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.$.token}}
+
+{}
+
+### Cancellation requires the original guest or assigned provider session
+POST {{baseUrl}}/bookings/{{bookingId}}/cancel
+Content-Type: application/json
+X-CSRF-TOKEN: {{csrf.response.body.$.token}}
+
+{}

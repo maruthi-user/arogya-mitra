@@ -1,0 +1,125 @@
+{
+  "providers": [
+    {
+      "id": "p1",
+      "name": "డా. శ్రీనివాస్",
+      "type": "mbbs",
+      "village": "rama",
+      "phone": "9000000001",
+      "open": true,
+      "slots": [
+        "10:00",
+        "11:00",
+        "12:00",
+        "17:00",
+        "18:00"
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "లక్ష్మి క్లినిక్",
+      "type": "rmp",
+      "village": "krishna",
+      "phone": "9000000002",
+      "open": true,
+      "slots": [
+        "16:00",
+        "17:00",
+        "18:00"
+      ]
+    },
+    {
+      "id": "p3",
+      "name": "డా. పద్మ",
+      "type": "mbbs",
+      "village": "gopala",
+      "phone": "9000000003",
+      "open": false,
+      "slots": [
+        "09:00",
+        "10:00",
+        "11:00"
+      ]
+    },
+    {
+      "id": "p4",
+      "name": "రమేష్ ఆయుష్ వైద్యశాల",
+      "type": "ayush",
+      "village": "venkata",
+      "phone": "9000000004",
+      "open": true,
+      "slots": [
+        "10:00",
+        "11:00",
+        "15:00"
+      ]
+    },
+    {
+      "id": "p5",
+      "name": "సాయి క్లినిక్",
+      "type": "rmp",
+      "village": "rama",
+      "phone": "9000000005",
+      "open": true,
+      "slots": [
+        "09:00",
+        "10:00",
+        "16:00",
+        "17:00"
+      ]
+    }
+  ],
+  "pharmacies": [
+    {
+      "id": "s1",
+      "name": "సాయి మెడికల్స్",
+      "village": "rama",
+      "phone": "9000000011",
+      "open": true,
+      "delivery": true,
+      "stock": {
+        "para": true,
+        "ors": true,
+        "cetirizine": true,
+        "antacid": true,
+        "cough": false,
+        "iron": true,
+        "amox": true
+      }
+    },
+    {
+      "id": "s2",
+      "name": "శ్రీ వెంకటేశ్వర మెడికల్",
+      "village": "krishna",
+      "phone": "9000000012",
+      "open": true,
+      "delivery": false,
+      "stock": {
+        "para": false,
+        "ors": true,
+        "cetirizine": false,
+        "antacid": true,
+        "cough": true,
+        "iron": false,
+        "amox": true
+      }
+    },
+    {
+      "id": "s3",
+      "name": "గోపాల్ మెడికల్ హాల్",
+      "village": "gopala",
+      "phone": "9000000013",
+      "open": true,
+      "delivery": true,
+      "stock": {
+        "para": true,
+        "ors": false,
+        "cetirizine": true,
+        "antacid": false,
+        "cough": true,
+        "iron": true,
+        "amox": false
+      }
+    }
+  ]
+}

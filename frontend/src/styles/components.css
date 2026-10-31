@@ -1,0 +1,14 @@
+.avatar{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--green-bg);color:var(--green);font-weight:700;flex:none}
+.profile-heading{display:flex;gap:12px;align-items:center}.stat-value{font-size:2rem}
+.search-bar,.filter-bar,.pagination{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.search-bar .field{flex:1;min-width:0}.search-bar .btn,.filter-bar .btn,.pagination .btn{flex:none}
+.filter-bar .field{flex:1;min-width:130px}.pagination{justify-content:center;align-items:center}
+.field select{font:inherit;color:inherit;min-height:52px;border:1px solid var(--line);border-radius:12px;padding:8px;background:var(--card);max-width:100%}
+.table-scroll{overflow:auto;max-width:100%;border:1px solid var(--line);border-radius:var(--radius)}.data-table{border-collapse:collapse;width:100%;background:var(--card);font-size:16px}
+.data-table caption{text-align:left;padding:12px;font-weight:600}.data-table th,.data-table td{padding:14px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}.data-table th{background:var(--green-bg)}
+.data-table .actions{flex-wrap:wrap}.data-table .btn{font-size:14px;min-height:44px;padding:6px 10px}.desktop-records{display:none}.mobile-records{display:flex}
+.confirm-dialog{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);color:var(--text);max-width:min(520px,calc(100vw - 24px));padding:24px}.confirm-dialog::backdrop{background:rgba(0,0,0,.6)}
+.mode-notice{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.mode-notice .btn{flex:none;min-height:44px;font-size:14px}
+.empty-state{padding:24px;text-align:center;color:var(--muted)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.card,.field,.content{min-width:0}.card p,.meta{overflow-wrap:anywhere}.top h1{overflow-wrap:anywhere}.grid2 .card{min-width:0}
+@media(min-width:768px){.desktop-records{display:block}.mobile-records{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}

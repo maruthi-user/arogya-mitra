@@ -1,14 +1,17 @@
 {
   "name": "arogya-mitra",
   "version": "0.1.0",
-  "description": "Telugu and English, audio-first app to find nearby doctors, clinics and pharmacies. Frontend only, localStorage.",
+  "description": "Telugu/English care access: modular frontend and local Spring Boot backend.",
   "private": true,
   "scripts": {
-    "start": "node server.js 3000",
-    "dev": "node server.js 3000 --open",
-    "start:80": "node server.js 80"
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix frontend test",
+    "test:api": "node backend/scripts/test-api.cjs",
+    "start": "npm --prefix frontend start",
+    "dev": "npm --prefix frontend run dev",
+    "start:80": "node frontend/scripts/dev-server.cjs 80"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

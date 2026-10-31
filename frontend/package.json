@@ -1,0 +1,13 @@
+{
+  "name": "arogya-mitra-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/dev-server.cjs 3000",
+    "dev": "node scripts/dev-server.cjs 3000 --open",
+    "build": "node scripts/build.cjs",
+    "test": "node --experimental-vm-modules --test tests/*.test.cjs"
+  },
+  "engines": { "node": ">=18" }
+}

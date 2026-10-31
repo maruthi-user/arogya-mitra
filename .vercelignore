@@ -1,5 +1,7 @@
-server.js
-start.bat
-package.json
-package-lock.json
-README.md
+backend/
+.m2/
+**/node_modules/
+**/*.log
+frontend/dist/
+docs/
+.git/
