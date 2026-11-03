@@ -21,14 +21,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest(properties={"spring.datasource.url=jdbc:h2:mem:secureflow;DB_CLOSE_DELAY=-1","app.seed-demo=false","app.notifications.scheduling=false","app.admin.username=test-admin","app.admin.email=admin@example.test","app.admin.password=Test-admin-password-123!"})
+@SpringBootTest(properties={"spring.profiles.active=test","spring.datasource.url=jdbc:h2:mem:secureflow;DB_CLOSE_DELAY=-1","app.seed-demo=false","app.notifications.scheduling=false","app.admin.username=test-admin","app.admin.email=admin@example.test","app.admin.password=Test-admin-password-123!"})
 @AutoConfigureMockMvc
 class SecureWorkflowTest {
     @Autowired MockMvc mvc;@Autowired ObjectMapper json;@Autowired JdbcTemplate db;@Autowired NotificationService notifications;
     @MockBean JavaMailSender mail;
     @BeforeEach void isolatedRecords(){
         for(String table:List.of("service_requests","bookings","activation_tokens","provider_applications","audit_events","email_outbox"))db.update("DELETE FROM "+table);
-        db.update("DELETE FROM accounts WHERE role<>'admin'");db.update("DELETE FROM entities");db.update("DELETE FROM patients");reset(mail);
+        db.update("DELETE FROM USER_SESSIONS");db.update("DELETE FROM PASSWORD_RESET_TOKENS");db.update("DELETE FROM APP_USERS WHERE role<>'ADMIN'");db.update("DELETE FROM accounts WHERE role<>'admin'");db.update("DELETE FROM entities");db.update("DELETE FROM patients");reset(mail);
     }
     class Client {
         MockHttpSession session;
@@ -48,8 +48,20 @@ class SecureWorkflowTest {
             return response.isBlank()?json.createObjectNode():json.readTree(response);
         }
     }
-    private Map<String,Object> registration(String suffix){return Map.of("name","Provider "+suffix,"username","provider-"+suffix,"email",suffix+"@example.test","phone","9876543210","organization","Community Clinic","designation","mbbs","village","rama","registrationId","");}
+    private Map<String,Object> registration(String suffix){return Map.of("name","Provider "+suffix,"username","provider-"+suffix,"email",suffix+"@example.test","phone","9876543210","organization","Community Clinic","designation","mbbs","village","rama","registrationId","","termsAccepted",true);}
     private String activate(Client client,String email)throws Exception{
+        var pending=db.queryForList("SELECT id FROM provider_applications WHERE email=? AND status='pending'",email);
+        if(!pending.isEmpty()){var reviewer=new Client();reviewer.call("POST","/api/auth/login",Map.of("username","test-admin","password","Test-admin-password-123!","role","admin"),200);reviewer.call("POST","/api/admin/applications/"+pending.get(0).get("id")+"/review",Map.of("decision","approved","reason","Provider registration reviewed"),200);}
+        var messages=db.query("SELECT body FROM email_outbox WHERE recipient=? AND subject LIKE '%registration approved%' ORDER BY updated_at DESC",(r,n)->r.getString(1),email);
+        if(!messages.isEmpty()&&Boolean.TRUE.equals(db.queryForObject("SELECT must_change_password FROM accounts WHERE email=?",Boolean.class,email))){
+            var nameMatch=Pattern.compile("Username: (.+)").matcher(messages.get(0));var passwordMatch=Pattern.compile("Temporary password: (.+)").matcher(messages.get(0));assertTrue(nameMatch.find());assertTrue(passwordMatch.find());
+            String temporary=passwordMatch.group(1).trim();assertTrue(client.call("POST","/api/auth/login",Map.of("username",nameMatch.group(1).trim(),"password",temporary,"role","provider"),200).get("mustChangePassword").asBoolean());
+            client.call("GET","/api/state",null,403);client.call("POST","/api/auth/change-initial-password",Map.of("currentPassword",temporary,"newPassword","Provider-password-123!"),200);
+            var providerClient=new Client();providerClient.call("POST","/api/auth/login",Map.of("username",nameMatch.group(1).trim(),"password","Provider-password-123!","role","provider"),200);
+            var service=new HashMap<String,Object>();service.put("kind","op");service.put("title","Consultation");service.put("titleTe","Consultation");service.put("description","Clinical consultation");service.put("fee",200);service.put("capacity",1);service.put("resource","main");service.put("coverage",List.of("rama","town"));service.put("slots",List.of("10:00","11:00"));service.put("active",true);service.put("available",true);
+            String serviceId=providerClient.call("POST","/api/care/services",service,201).get("id").asText();var reviewer=new Client();reviewer.call("POST","/api/auth/login",Map.of("username","test-admin","password","Test-admin-password-123!","role","admin"),200);reviewer.call("POST","/api/care/services/"+serviceId+"/review",Map.of("decision","approved","reason","Consultation service reviewed"),200);return temporary;
+        }
+
         String body=db.queryForObject("SELECT body FROM email_outbox WHERE recipient=? AND subject LIKE '%account access%' ORDER BY updated_at DESC LIMIT 1",String.class,email);
         var match=Pattern.compile("#activate=([A-Za-z0-9_-]+)").matcher(body);assertTrue(match.find());String token=match.group(1);
         client.call("POST","/api/auth/activate",Map.of("token",token,"password","Provider-password-123!"),200);
@@ -63,7 +75,7 @@ class SecureWorkflowTest {
         anonymous.call("POST","/api/auth/register",registration("first"),409);
         anonymous.call("POST","/api/auth/login",Map.of("username","provider-first","password","Provider-password-123!","role","provider"),401);
         var admin=new Client();admin.call("POST","/api/auth/login",Map.of("username","test-admin","password","Test-admin-password-123!","role","admin"),200);
-        admin.call("POST","/api/admin/applications/"+appId+"/review",Map.of("decision","approved","reason",""),400);
+        admin.call("POST","/api/admin/applications/"+appId+"/review",Map.of("decision","rejected","reason",""),400);
         String provider=admin.call("POST","/api/admin/applications/"+appId+"/review",Map.of("decision","approved","reason","Welcome. Set your password and configure your schedule."),200).get("providerId").asText();
         admin.call("POST","/api/admin/applications/"+appId+"/review",Map.of("decision","rejected","reason","Already reviewed"),409);
         assertEquals(0,anonymous.call("GET","/api/providers",null,200).size());

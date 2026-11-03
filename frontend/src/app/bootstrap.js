@@ -1,6 +1,10 @@
+import {setTableScope,resetDataTables,createTableActions} from '../components/data-display/table.js';
+import {createOnboardingWorkflows} from '../features/care/onboarding.js';
+import { resolveScreen, homeScreen } from './access-policy.js';
+import { createCareWorkflows } from '../features/care/workflows.js';
 import { createBookingAction } from '../features/appointments/booking-actions.js';
 import { T, LANG, TOUR, lbl, applyLang } from '../i18n/index.js';
-import { VILLAGES, MEDICINES } from '../data/reference-data.js';
+import { VILLAGES, MEDICINES, applyReferenceData } from '../services/reference-catalog.js';
 
 import { Appointments } from '../features/appointments/workflow.js';
 import { Voice } from '../features/voice/speech-service.js';
@@ -29,28 +33,45 @@ import { createSettingsPage } from '../pages/shared/settings.js';
 import { createGlobalSearchPage } from '../pages/shared/global-search.js';
 import { ConfirmDialog } from '../components/feedback/dialog.js';
 import { createAccountWorkflows } from '../features/auth/workflows.js';
-export function startApplication() {
+export function startApplication(options = {}) {
+  let disposed=false;
+  const subscriptions=[];
+  function listen(target,event,handler,options){target.addEventListener(event,handler,options);subscriptions.push(()=>target.removeEventListener?.(event,handler,options));}
+
 
   const S = createAppState();
   let busy = false;
   let ready = true;
+  let clearCareState=()=>{};
   function applySession(session) {
+    if(S.session.role!==session.role||S.session.subjectId!==session.subjectId||S.session.accountId!==session.accountId){
+      for(const key of ['providers','pharmacies','bookings','applications','notifications','audit','medicineRequests'])S[key]=[];
+      resetDataTables();clearCareState();S.documentPanel=null;S.authRevision=(S.authRevision||0)+1;S.settings.name='';S.settings.phone='';
+    }
     S.session=session;
     S.settings.role=['patient','provider','admin'].includes(session.role)?session.role:null;
     S.settings.patientId=session.role==='patient'?session.subjectId:null;
     S.settings.providerId=session.role==='provider'?session.subjectId:null;
     if(session.role==='patient'){
       S.settings.name=session.profile?.name==='Guest'?'':session.profile?.name||'';
-      S.settings.village=session.profile?.village||'rama';S.settings.phone=session.profile?.phone||'';
+      S.settings.village=session.profile?.village||'';S.settings.phone=session.profile?.phone||'';
     }else S.settings.name=session.name||'';
   }
+  let refreshRevision=0;
   async function refresh() {
-    applySession(await DataService.session());Object.assign(S,await DataService.load());
+    const revision=++refreshRevision;
+    try{
+    const [references,session]=await Promise.all([DataService.referenceData(),DataService.session()]);
+    if(disposed||revision!==refreshRevision)return;
+    applyReferenceData(references);applySession(session);
+    if(session.mustChangePassword){S.connectionError='';ready=true;return;}
+    const aggregate=await DataService.load();if(disposed||revision!==refreshRevision)return;Object.assign(S,aggregate);
     if(S.session.role==='admin'){
       const [applications,notifications,audit,requests]=await Promise.all([DataService.applications(),DataService.notifications(),DataService.audit(),DataService.medicineRequests()]);
-      Object.assign(S,{applications,notifications,audit,medicineRequests:requests});
-    }else {S.applications=[];S.notifications=[];S.audit=[];S.medicineRequests=S.session.role==='patient'?await DataService.medicineRequests():[];}
+      if(disposed||revision!==refreshRevision)return;Object.assign(S,{applications,notifications,audit,medicineRequests:requests});
+    }else {const requests=session.role==='patient'?await DataService.medicineRequests():[];if(disposed||revision!==refreshRevision)return;S.applications=[];S.notifications=[];S.audit=[];S.medicineRequests=requests;}
     S.connectionError='';ready=true;
+    }catch(error){if(!disposed&&revision===refreshRevision){S.connectionError=[401,403].includes(error.status)?'':error.message;publish();}throw error;}
   }
   Voice.enabled = S.settings.voice;
 
@@ -74,6 +95,8 @@ export function startApplication() {
   const hash=window.location?.hash||'';
   if(hash.startsWith('#activate=')){S.activationToken=hash.slice(10);nav.screen='activate';window.history?.replaceState(null,'',window.location.pathname);}
   else if(hash==='#provider-login'||hash==='#admin-login'){nav.screen='login';nav.params={role:hash==='#admin-login'?'admin':'provider'};}
+
+  function publish(){if(!disposed)options.onChange?.({session:S.session,screen:nav.screen,params:{...nav.params},language:LANG,connectionError:S.connectionError||''});}
 
   /* ---------- helpers ---------- */
 
@@ -128,7 +151,7 @@ export function startApplication() {
 
   function navbar() { return roleUI.navbar(nav.screen); }
 
-  function page(title, body) { return renderPageLayout({ title, body, header: header(title), navigation: navbar(), mode: DataService.mode }); }
+  function page(title, body) { if(options.embedded)return '<div class="healthcare-page"><div class="section-heading"><h1>'+esc(title)+'</h1>'+(nav.stack.length?'<button class="btn" data-a="back">'+(T.back||'Back')+'</button>':'')+'</div>'+body+'</div>';return renderPageLayout({ title, body, header: header(title), navigation: navbar(), mode: DataService.mode }); }
   const providerCard = createProviderCard({ distTo, distLabel, villageName, typeBadge });
 
   /* ---------- screens: each returns { html, voice, after } ---------- */
@@ -138,15 +161,19 @@ export function startApplication() {
   /* ---------- render ---------- */
 
   function render(speak) {
-    if (['dash','providerBookings','schedule','providerProfile'].includes(nav.screen) && S.session.role !== 'provider') {nav.screen='login';nav.params={role:'provider'};nav.stack=[];}
-    if(nav.screen.startsWith('admin')&&S.session.role!=='admin'){nav.screen='login';nav.params={role:'admin'};nav.stack=[];}
-    if(['home','symptoms','providers','book','bookings','confirmed','meds','command','providerDetail','search','medicineRequests'].includes(nav.screen)&&S.session.role!=='patient'){nav.screen='roles';nav.stack=[];}
+    if(disposed)return;
+    const businessType=S.providers.find(p=>p.id===S.settings.providerId)?.businessType;
+    const destination=resolveScreen(nav.screen,S.session,businessType);
+    if(destination.screen!==nav.screen){nav.screen=destination.screen;nav.params=destination.params||{};nav.stack=[];}
+    if(!screens[nav.screen]){nav.screen='notFound';nav.params={};}
+    setTableScope([S.session.role,S.session.subjectId||'',S.authRevision||0,nav.screen].join(':'));
     const r = screens[nav.screen](nav.params);
     app.innerHTML = r.html;
     app.dataset.screen = nav.screen;
     app.dataset.role = ['roles','login','register','activate','requestSetup','applicationSubmitted'].includes(nav.screen)?'public':S.settings.role||'public';
     window.scrollTo(0, 0);
     currentVoice = r.voice;
+    publish();
     if (r.after) r.after();
     if (speak !== false && interacted && r.voice) Voice.say(r.voice);
   }
@@ -225,7 +252,7 @@ export function startApplication() {
     },
     providerPage:d=>{nav.params.page=Number(d.page);render(false);},
     go: d => go(d.s),
-    home: () => resetTo(S.settings.role === 'admin'?'adminHome':S.settings.role === 'provider' ? 'dash' : 'home'),
+    home: () => resetTo(homeScreen(S.session.role)),
     setLang: d => {
       S.settings.lang = d.id;
       Store.save();
@@ -301,7 +328,7 @@ export function startApplication() {
 
   /* ---------- events ---------- */
 
-  document.addEventListener('pointerdown', () => { interacted = true; }, { once: true });
+  listen(document,'pointerdown', () => { interacted = true; }, { once: true });
 
   async function dispatch(el) {
     interacted = true;
@@ -321,17 +348,24 @@ export function startApplication() {
       if (error.status === 409) { try { await refresh(); render(false); } catch (_) {} }
     } finally { busy = false; app.removeAttribute('aria-busy'); }
   }
-  document.addEventListener('click',e=>{const el=e.target.closest('[data-a]');if(el)return dispatch(el);});
-  document.addEventListener('submit',e=>{const action=e.target.dataset.formAction;if(action){e.preventDefault();return dispatch({dataset:{a:action}});}});
+  listen(document,'arogya-action',e=>{if(actions[e.detail])void dispatch({dataset:{a:e.detail}});});
+  listen(document,'click',e=>{const el=e.target.closest('[data-a]');if(el)return dispatch(el);});
+  listen(document,'submit',e=>{const action=e.target.dataset.formAction;if(action){e.preventDefault();return dispatch({dataset:{...e.target.dataset,a:action}});}});
 
-  document.addEventListener('change', e => {
+  listen(document,'change', e => {
+    if(e.target.hasAttribute?.('data-table-sort'))return dispatch({dataset:{a:'tableSortSelect',table:e.target.dataset.table,value:e.target.value}});
+    if(e.target.hasAttribute?.('data-table-size'))return dispatch({dataset:{a:'tableSize',table:e.target.dataset.table,value:e.target.value}});
     if (e.target.id === 'nameInput') {
       S.settings.name = e.target.value.trim();
       Store.save();
     }
   });
 
+  Object.assign(actions,createTableActions(render));
   const pageContext = { S,page,header,esc,villageName,medById,providerById,pharmacyById,distTo,distLabel,typeBadge,fmtTime,isoDate,dateLabel,providerCard,finishIntro, get introStep() { return introStep; } };
+  screens.account=()=>({voice:null,html:''});
+  screens.accessDenied=()=>({voice:null,html:page(LANG==='te'?'అనుమతి లేదు':'Access denied','<section class="panel" role="alert"><p>'+(LANG==='te'?'ఈ పేజీకి మీ పాత్రకు అనుమతి లేదు.':'Your role does not have access to this page.')+'</p><button class="btn accent" data-a="home">'+(LANG==='te'?'నా హోమ్':'Go to my home')+'</button></section>')});
+  screens.notFound=()=>({voice:null,html:page(LANG==='te'?'పేజీ దొరకలేదు':'Page not found','<section class="panel"><p>'+(LANG==='te'?'ఈ లింక్ అందుబాటులో లేదు.':'This page is unavailable. Check the link or return home.')+'</p><button class="btn accent" data-a="home">'+(LANG==='te'?'హోమ్':'Home')+'</button></section>')});
   screens.command = createVoiceRequestPage(pageContext);
   screens.intro = createIntroTourPage(pageContext);
   screens.lang = createLanguagePage(pageContext);
@@ -349,7 +383,9 @@ export function startApplication() {
   Object.assign(screens,roleUI.screens);
   Object.assign(actions,roleUI.actions);
   const accountUI=createAccountWorkflows({S,page,go,resetTo,refresh,render,toast,applySession});
-  Object.assign(screens,accountUI.screens);Object.assign(actions,accountUI.actions);
+  Object.assign(screens,accountUI.screens);Object.assign(actions,accountUI.actions);screens.adminPendingProviders=()=>{S.providerTab='pending';return screens.adminApplications();};
+  const careUI=createCareWorkflows({S,page,go,render,toast,refresh});
+  Object.assign(screens,careUI.screens);Object.assign(actions,careUI.actions);const onboardingUI=createOnboardingWorkflows({S,page,go,render,toast,refresh,invalidateCare:careUI.reset});Object.assign(screens,onboardingUI.screens);Object.assign(actions,onboardingUI.actions);clearCareState=()=>{careUI.reset();onboardingUI.reset();};
 
   if ('speechSynthesis' in window) {
     speechSynthesis.onvoiceschanged = () => { if (nav.screen === 'settings') render(false); };
@@ -357,5 +393,5 @@ export function startApplication() {
 
   render(false);
   const initialized=refresh().then(()=>render(false)).catch(error=>{S.connectionError=error.message;render(false);});
-  return { state:S,navigation:nav,initialized };
+  return { state:S,navigation:nav,initialized,go,resetTo,refresh,reload:async()=>{await refresh();render(false);},expireSession:()=>{refreshRevision++;S.activationToken=null;S.applicationReceipt=null;applySession({role:'anonymous'});resetTo('roles');},destroy(){resetDataTables();disposed=true;tourToken++;Voice.stop();clearTimeout(toast.t);for(const unsubscribe of subscriptions)unsubscribe();if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=null;} };
 }

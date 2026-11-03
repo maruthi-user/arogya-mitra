@@ -12,25 +12,26 @@ import in.arogyamitra.auth.AccountRepository;
 import in.arogyamitra.notification.NotificationService;
 @Service
 public class BookingService {
+    private final in.arogyamitra.reference.ReferenceCatalog reference;
     private final BookingRepository bookings;
     private final CatalogRepository store;
     private final PatientService patients;
     private final AccountRepository accounts;private final NotificationService notifications;
-    private static final Set<String> VILLAGES=Set.of("rama","krishna","gopala","venkata");
-    public BookingService(BookingRepository bookings,CatalogRepository store,PatientService patients,AccountRepository accounts,NotificationService notifications){this.bookings=bookings;this.store=store;this.patients=patients;this.accounts=accounts;this.notifications=notifications;}
+    public BookingService(BookingRepository bookings,CatalogRepository store,PatientService patients,AccountRepository accounts,NotificationService notifications,in.arogyamitra.reference.ReferenceCatalog reference){this.reference=reference;this.bookings=bookings;this.store=store;this.patients=patients;this.accounts=accounts;this.notifications=notifications;}
     @Transactional public Map<String,Object> book(Map<String,Object> input) {
         String pid = text(input, "pid"), date = text(input, "date"), time = text(input, "time"), village = text(input, "village"), name = text(input, "name");
         String patient = text(input,"patientId");
         if (!(input.get("reason") instanceof String reason) || reason.length() > 300) throw invalid("Invalid patient or reason");
         patients.get(patient);
-        var provider = store.lockEntity(pid); // Row lock serializes competing requests, including across app instances.
+        var provider = store.lockEntity(pid);
+        if(!Set.of("mbbs","rmp","ayush").contains(provider.get("type")))throw invalid("Use this business’s approved service catalog"); // Row lock serializes competing requests, including across app instances.
         var now = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
         LocalDate day; LocalTime slot;
         try { day = LocalDate.parse(date); slot = LocalTime.parse(time); }
         catch (Exception e) { throw invalid("Invalid date or time"); }
         if (!date.equals(day.toString()) || !time.equals(slot.toString()) || !List.of(now.toLocalDate(), now.toLocalDate().plusDays(1)).contains(day)
             || !LocalDateTime.of(day,slot).isAfter(now) || !(provider.get("slots") instanceof List<?> slots) || !slots.contains(time)
-            || !VILLAGES.contains(village) || name.isBlank() || name.length() > 40) throw invalid("Invalid booking details");
+            || !reference.contains("villages",village) || name.isBlank() || name.length() > 40) throw invalid("Invalid booking details");
         if (bookings.slotReserved(pid,date,time,System.currentTimeMillis()))
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Slot already booked");
         var booking = new LinkedHashMap<String,Object>();
@@ -92,8 +93,8 @@ public class BookingService {
         try{day=LocalDate.parse(date);}catch(Exception e){throw invalid("Invalid date");}
         var now=LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
         if(!date.equals(day.toString())||!List.of(now.toLocalDate(),now.toLocalDate().plusDays(1)).contains(day))throw invalid("Choose today or tomorrow");
-        var reserved=list(null,providerId,null).stream().filter(b->date.equals(b.get("date"))&&Set.of("pending","confirmed").contains(b.get("status"))).map(b->b.get("time")).toList();
-        var times=((List<?>)p.get("slots")).stream().map(Object::toString).filter(t->LocalDateTime.of(day,LocalTime.parse(t)).isAfter(now)).map(t->Map.of("time",t,"available",!reserved.contains(t))).toList();
+
+        var times=((List<?>)p.get("slots")).stream().map(Object::toString).filter(t->LocalDateTime.of(day,LocalTime.parse(t)).isAfter(now)).map(t->Map.of("time",t,"available",!bookings.slotReserved(providerId,date,t,System.currentTimeMillis()))).toList();
         return Map.of("providerId",providerId,"date",date,"timeZone","Asia/Kolkata","slots",times);
     }
 }

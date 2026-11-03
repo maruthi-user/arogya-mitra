@@ -1,63 +1,47 @@
-# Arogya Mitra
+﻿# Arogya Mitra
 
-Responsive Telugu/English care application with a JavaScript frontend and a Spring Boot backend. Patient guest access, provider registration/review/activation, provider/admin login, appointment workflows, pharmacy inquiries and email notifications use the backend and database. Demo mode and sample-profile selection have been removed from the application.
+Telugu/English healthcare access for villages and nearby towns, using the FPCS template foundation with Arogya Mitra's existing healthcare modules and PostgreSQL records.
 
-## Start locally
+## Run locally
 
-Prerequisites: Node 18+, JDK 17+, Maven. Use npm instead of npm.cmd outside Windows.
+Prerequisites: JDK 17+, Maven, PostgreSQL, Node 20.19+ (or a supported Node 22+ release).
 
-**1. Start the frontend from the repository root:**
+The configured database is `arighya_db` on localhost:5432. Override `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` as needed. No records or passwords are reset on ordinary startup.
 
-```powershell
-npm.cmd start
-```
-
-Open its printed URL. If port 3000 is occupied, the server chooses another port. The development server proxies /api to http://127.0.0.1:9090. Set BACKEND_URL if your local backend uses another address.
-
-**2. Start local email capture:**
+From the repository root, open two terminals:
 
 ```powershell
-cd backend
-docker compose up -d mailpit
+.\start-postgres.cmd
 ```
-
-Alternatively run a native Mailpit binary with SMTP bound to 127.0.0.1:1025 and its UI to 127.0.0.1:8025. During this implementation, the official native release was downloaded under .tools/mailpit/ (ignored by Git). Its startup command from the project root is:
 
 ```powershell
-.\.tools\mailpit\mailpit.exe --smtp 127.0.0.1:1025 --listen 127.0.0.1:8025 --disable-version-check
+.\start-postgres-frontend.cmd
 ```
 
-Mailpit captures mail locally; it does not deliver to real inboxes. Open http://localhost:8025 to read acknowledgment, approval/password-setup, rejection and appointment-request emails. Delivery failures remain visible in the admin notification queue.
+Open http://127.0.0.1:3012. Backend: http://127.0.0.1:9092. The Vite server forwards `/api` to the backend. These ports avoid the other applications already using 3000/9090. If launching manually, match `FRONTEND_URL`, `APP_CORS_ORIGINS` and `BACKEND_URL` to your ports.
 
-**3. Create the first admin and start the backend:**
+JWT signing requires a persistent, private base64 `JWT_SECRET_KEY` of at least 32 decoded bytes. On this workspace it is in the ignored `backend/config/local-jwt.properties`, generated during migration. Do not commit, print or replace it casually; rotating it signs out existing JWT sessions. A new checkout must supply its own key. `SESSION_COOKIE_SECURE=true` is required behind production HTTPS. Nothing has been deployed.
 
-In a new PowerShell terminal, from the root:
+## Interfaces
 
-```powershell
-$env:ADMIN_USERNAME='your-admin-username'
-$env:ADMIN_EMAIL='your-admin-email@example.test'
-$adminSecret=Read-Host 'Admin password (12-72 characters)' -AsSecureString
-$env:ADMIN_PASSWORD=[System.Net.NetworkCredential]::new('', $adminSecret).Password
-$env:FRONTEND_URL='http://localhost:3000' # use the actual printed frontend URL
-cd backend
-mvn spring-boot:run
-```
+- **Patient:** passwordless guest access, Telugu/English and voice/text navigation, provider/service discovery, appointments, home visits, medicines/delivery, lab tests, home check-ups, operator assistance, request history and cancellation. Emergency calling is separate from dispatch.
+- **Provider:** registration and supporting documents, admin approval and one-use password setup, organisation-owned services, coverage, pricing, recurring slots, duration/capacity, availability and explicit request transitions.
+- **Admin:** applications/documents, service review, organisation suspension/reactivation, staff invitations, pharmacy stock, operational requests, notification retries and combined healthcare/security audit history.
+- **Account:** the template's account screen, password change and device-session management for providers/admins.
 
-There is no default administrator password. The initial administrator is created once and stored with a BCrypt hash. On subsequent starts, existing administrator credentials remain unchanged; remove ADMIN_PASSWORD from the runtime environment after initial setup. Do not commit passwords or SMTP credentials.
+Use the current account usernames/passwords in your database. Historical sample usernames or passwords may have been changed by the project owner; migration retains current values and never resets them. Provider approval is not professional credential verification.
 
-The backend listens on http://127.0.0.1:9090 and stores local H2 data under backend/data/. Always start it from backend/ to retain that path. Existing legacy demo records are preserved but excluded from the operational directory; test fixtures exist only under backend/src/test/resources/.
+## Architecture
 
-On Windows, you can also run `.\start-backend.cmd` from the repository root after setting these environment variables. It selects the backend working directory and launches through Maven. Local development needs no cloud account or SSH keys. For stale VS Code dependency errors, see [IDE troubleshooting](backend/README.md#local-startup-and-ide-dependency-errors).
+Frontend: React 19, Vite, Tailwind, Redux Toolkit/RTK Query, Wouter and the FPCS reusable shell/components. Existing healthcare page factories and actions run inside a scoped React host so their workflows/translations/voice are preserved; they have not all been rewritten as JSX. The template supplies navigation, branding, theme, command palette, provider/admin login and account/devices screens. Operational records and lookup catalogs come from backend APIs; no frontend demo adapter is used.
 
-## Use the application
+Backend: Java 17, Spring Boot 3.5.16, FPCS JWT access/rotating refresh cookies, device sessions, permission infrastructure, JPA/Hibernate and Flyway. Patient/provider catalog/booking repositories use JPA. Specialized healthcare service, capacity, outbox and audit queries retain parameterized SQL within the same transaction manager. Guest identities remain server-owned sessions; provider/admin production authentication uses JWT cookies, not a stored server authentication session. A CSRF session and readable XSRF cookie protect mutations for both clients.
 
-- **Patient:** enter directly without an account. A server-owned guest session scopes appointments and inquiries. Provide name/contact phone when booking. Cookie clearing, session expiry, or switching away from a guest session may remove access; guest recovery is not yet implemented.
-- **Provider:** apply with personal/practice/contact details; review before submission. An admin approves or rejects the application. Approved applicants receive a one-use password link, set a password, then sign in and configure schedule/services/fee. Approval is not professional credential verification.
-- **Admin:** sign in with the bootstrapped account. Review applications in a confirmation dialog, enter activation instructions or a rejection reason, manage pharmacies/stock, follow inquiries, inspect audit history and retry failed emails.
+Existing UUID healthcare account/organisation IDs remain intact; the template's `APP_USERS` table holds numeric authentication IDs. The bridge maps these identities and synchronizes approval, activation, reset and suspension. Template Tickets/demo modules were not imported. Existing transactional email delivery and private application documents remain the healthcare implementations.
 
-The directory starts empty. No fabricated providers, inventory, appointments or dashboard metrics are supplied. Village proximity is labelled as such; it is not a calculated road distance. Ambulance assistance is a direct emergency-call action; no dispatch integration is claimed.
+Flyway migrations are under `backend/src/main/resources/db/migration`. Existing databases baseline at version 0; V1 retains/creates healthcare tables, V2 adds the template core, V3 adds JWT device sessions, V4 copies current BCrypt hashes/roles/status into template identities. Hibernate validates; it does not rewrite the schema. The old startup SQL initializer is disabled. Existing H2 files were not migrated into PostgreSQL or deleted.
 
-## Verify
+## Verification
 
 ```powershell
 npm.cmd test
@@ -66,28 +50,10 @@ cd backend
 mvn test
 ```
 
-Tests use in-memory databases. Security tests cover CSRF, role restrictions, forged IDs, approval/activation, token reuse, password-reset session invalidation, guest booking ownership and notification failure/retry. The live API client supports a full isolated workflow with real SMTP delivery to Mailpit; see [backend testing](backend/README.md).
+Tests cover role/ownership restrictions, existing bookings, registration/approval/activation, private documents, notification failures/retries, service request transitions, duplicate/overlapping capacity, additive schema preservation, database-owned catalogs and production-mode JWT login/refresh/password/device/guest behavior. The React shell/login also have automated render coverage. Browser/device/microphone and screen-reader checks still require manual verification; automated render tests are not a visual audit.
 
-## Structure
+Documentation: [template migration](docs/fpcs-template-migration.md), [healthcare workflows](docs/service-platform.md), [PostgreSQL setup](docs/postgres-local-data.md).
 
-```text
-frontend/src/
-  app/                 routing, server session state and action wiring
-  pages/               landing, patient, provider, auth and admin interfaces
-  components/          shared UI, forms, tables, navigation and review dialogs
-  features/            account workflows, appointments, provider search and voice
-  services/api/        session-aware HTTP client and operational API methods
-  styles/              base/component styles and responsive product design
-frontend/public/assets/images/arogya-mitra-logo.png
-backend/src/main/java/in/arogyamitra/
-  security/, auth/, registration/, admin/, notification/
-  patient/, provider/, booking/, pharmacy/, shared/, config/
-backend/api/           Postman and HTTP examples
-backend/scripts/       API verification client
-```
+For local-only startup and the optional cloud profile boundary, see [local-first startup](docs/local-startup.md). Standard IDE/Maven startup uses backend 9090 with Vite 3000; the paired launchers explicitly use 9092/3012.
 
-## Deployment readiness
-
-The implementation runs locally and has not been deployed or independently security/load/accessibility audited. Publish frontend/dist only after deploying the backend and configuring API routing (prefer a same-origin /api reverse proxy). Set FRONTEND_URL to the public HTTPS URL, configure real SMTP, secure cookies, a production database, backups, monitoring and admin recovery. Static hosting alone cannot run these workflows.
-
-Official professional-registration verification, real ambulance dispatch, guest recovery, external inventory feeds and a conversational AI model are not implemented integrations. See [release requirements](docs/implementation-roadmap.md), [architecture](docs/architecture.md), [frontend](frontend/README.md) and [backend](backend/README.md).
+Stage 1 improvements (role-aware routes, account-page restoration, session cleanup, network recovery and logout feedback) are tracked in [the staged improvement plan](docs/improvement-plan.md).

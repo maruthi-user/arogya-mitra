@@ -11,18 +11,20 @@ import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class PatientService {
+    private final in.arogyamitra.reference.ReferenceCatalog reference;
     private final PatientRepository patients;
     @Value("${app.seed-demo:false}") boolean seedDemo;
-    public PatientService(PatientRepository patients){this.patients=patients;}
+    public PatientService(PatientRepository patients,in.arogyamitra.reference.ReferenceCatalog reference){this.reference=reference;this.patients=patients;}
     @PostConstruct void seed(){
         if(!seedDemo)return;
         if(patients.find("demo-patient").isEmpty())patients.create("demo-patient","Sample patient 1","rama","te");
         if(patients.find("demo-patient-2").isEmpty())patients.create("demo-patient-2","Sample patient 2","rama","te");
     }
+    public String defaultVillage(){return reference.ids("villages").stream().findFirst().orElseThrow(()->invalid("No service locations are configured"));}
     public List<Map<String,Object>> list(){return patients.list();}
     public Map<String,Object> get(String id){return patients.find(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Patient not found"));}
     private void validate(Map<String,Object> body){
-        if(text(body,"name").length()>40 || !Set.of("rama","krishna","gopala","venkata").contains(text(body,"village"))
+        if(text(body,"name").length()>40 || !reference.contains("villages",text(body,"village"))
             || !Set.of("te","en").contains(text(body,"language")))throw invalid("Invalid patient profile");
     }
     @Transactional public Map<String,Object> create(Map<String,Object> body){

@@ -1,5 +1,5 @@
 import { T, lbl } from '../../i18n/index.js';
-import { VILLAGES } from '../../data/reference-data.js';
+import { VILLAGES } from '../../services/reference-catalog.js';
 
 export function createVillageSetupPage(ctx) {
   return function () {

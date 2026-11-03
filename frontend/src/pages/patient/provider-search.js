@@ -1,5 +1,6 @@
+import {providerRecords} from '../../components/data-display/record-tables.js';
 import { T, LANG, lbl } from '../../i18n/index.js';
-import { SYMPTOMS } from '../../data/reference-data.js';
+import { SYMPTOMS } from '../../services/reference-catalog.js';
 
 import { providerResults } from '../../features/providers/catalog-view.js';
 import { SearchInput, FilterBar } from '../../components/forms/search-input.js';
@@ -11,7 +12,7 @@ export function createProviderSearchPage(ctx) {
     const { S, page, distTo, providerCard } = ctx;
 
     const sym = SYMPTOMS.find(s => s.id === p.symptom);
-    const result=providerResults(S.providers,p,sym?.types,distTo);
+    const result=providerResults(S.providers,{...p,page:1,pageSize:Math.max(1,S.providers.length)},sym?.types,distTo);
     const l=(te,en)=>LANG==='te'?te:en;
     return {
       voice: 'providers',
@@ -23,10 +24,10 @@ export function createProviderSearchPage(ctx) {
           {id:'providerOpen',label:l('లభ్యత','Availability'),value:p.open?'open':'',options:[{value:'',label:l('అన్నీ','All')},{value:'open',label:T.open}]},
           {id:'providerSort',label:l('క్రమం','Sort'),value:p.sort||'recommended',options:[{value:'recommended',label:l('లభ్యత, దూరం','Availability, distance')},{value:'distance',label:l('దూరం','Distance')},{value:'name',label:l('పేరు','Name')}]}
         ]})}
-        <div class="provider-grid">${result.rows.map(providerCard).join('')||EmptyState(l('ఫలితాలు లేవు','No matching providers'))}</div>
-        ${Pagination({...result,action:'providerPage',label:l('పేజీ','Page'),previous:l('మునుపటి','Previous'),next:l('తరువాత','Next')})}
+        ${providerRecords(result.rows,providerCard,{showSearch:false})}
+
         <p class="fine">${LANG==='te'?'గ్రామం ఆధారంగా ఫలితాలు చూపబడతాయి. ప్రయాణ దూరం కాదు.':'Results use village proximity, not measured travel distance.'}</p>`)
     };
-  
+
   };
 }

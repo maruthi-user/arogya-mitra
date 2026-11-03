@@ -13,10 +13,10 @@ import static in.arogyamitra.shared.ApiInput.*;
 
 @Service
 public class ActivationService {
-    private final JdbcTemplate db;private final NotificationService notifications;private final PasswordEncoder passwords;
+    private final PlatformAccountBridge bridge;private final JdbcTemplate db;private final NotificationService notifications;private final PasswordEncoder passwords;
     private final SecureRandom random=new SecureRandom();
     @Value("${app.frontend-url:http://localhost:3000}") String frontend;
-    public ActivationService(JdbcTemplate db,NotificationService notifications,PasswordEncoder passwords){this.db=db;this.notifications=notifications;this.passwords=passwords;}
+    public ActivationService(JdbcTemplate db,NotificationService notifications,PasswordEncoder passwords,PlatformAccountBridge bridge){this.bridge=bridge;this.db=db;this.notifications=notifications;this.passwords=passwords;}
     private String hash(String token){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException(e);}}
     public void issue(String accountId,String email,String instructions){
         db.update("UPDATE activation_tokens SET used=TRUE WHERE account_id=?",accountId);
@@ -25,7 +25,7 @@ public class ActivationService {
         notifications.queue(email,"Arogya Mitra — account access",instructions+"\n\nSet your password (valid for 24 hours, one use):\n"+frontend+"/#activate="+token+"\n\nLogin: "+frontend+"/#provider-login\nIf you did not request this, ignore this email.");
     }
     @Transactional public void request(String email){
-        var accounts=db.queryForList("SELECT id,email FROM accounts WHERE email=? AND role='provider'",email.toLowerCase(Locale.ROOT));
+        var accounts=db.queryForList("SELECT id,email FROM accounts WHERE email=? AND role='provider' AND suspended=FALSE AND registration_status='approved' AND must_change_password=FALSE",email.toLowerCase(Locale.ROOT));
         if(!accounts.isEmpty())issue((String)accounts.get(0).get("id"),(String)accounts.get(0).get("email"),"Use this link to set or reset your provider password.");
     }
     @Transactional public void activate(String token,String password){
@@ -34,7 +34,9 @@ public class ActivationService {
         var rows=db.queryForList("SELECT account_id,expires_at,used FROM activation_tokens WHERE token_hash=? FOR UPDATE",hash(token));
         if(rows.isEmpty()||Boolean.TRUE.equals(rows.get(0).get("used"))||((Number)rows.get(0).get("expires_at")).longValue()<=System.currentTimeMillis())throw invalid("This link is invalid or expired. Request a new password link.");
         String account=(String)rows.get(0).get("account_id");
-        db.update("UPDATE accounts SET password_hash=?,active=TRUE,credential_version=credential_version+1 WHERE id=?",passwords.encode(password),account);
+        int updated=db.update("UPDATE accounts SET password_hash=?,active=TRUE,credential_version=credential_version+1 WHERE id=? AND suspended=FALSE AND registration_status='approved' AND must_change_password=FALSE",passwords.encode(password),account);
+        if(updated==1)bridge.sync(account,true);
+        if(updated!=1)throw invalid("Account is suspended. Contact the administrator.");
         db.update("UPDATE activation_tokens SET used=TRUE WHERE account_id=?",account);
     }
 }

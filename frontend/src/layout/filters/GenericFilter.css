@@ -1,0 +1,508 @@
+/* ===========================
+   Generic Filter
+=========================== */
+
+.generic-filter {
+    width: 100%;
+}
+
+.filter-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.filter-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    width: 100%;
+    min-width: 0;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #111827;
+}
+
+.filter-required {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* ===========================
+   Inputs
+=========================== */
+
+.filter-input,
+.searchable-select-control {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0 12px;
+    background: #fff;
+    font-size: 11px;
+    transition: all .2s;
+    box-sizing: border-box;
+}
+
+.filter-input:focus,
+.searchable-select-control.is-open {
+    border-color: #2563eb;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, .15);
+}
+
+.filter-input::placeholder,
+.searchable-select-placeholder {
+    color: #9ca3af;
+}
+
+/* ===========================
+   Searchable Select
+=========================== */
+.searchable-select {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.searchable-select-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.searchable-select-value {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.searchable-select-arrow {
+    margin-left: 10px;
+    font-size: 12px;
+}
+
+/* The dropdown is portaled to <body>. Inside a modal overlay that disables
+   pointer events on everything outside the modal content (e.g. Radix Dialog),
+   the portaled dropdown would inherit that and become unclickable - it must
+   always stay interactive. */
+[data-floating-dropdown="true"] {
+    pointer-events: auto;
+}
+
+.searchable-select-dropdown {
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .15);
+    z-index: 999999;
+    width: var(--dropdown-width);
+    max-width: var(--dropdown-width);
+    overflow: hidden;
+}
+
+.searchable-select-search {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.searchable-select-search-input {
+    width: 100%;
+    height: 36px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 11px;
+    outline: none;
+}
+
+.virtualized-options-container {
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.searchable-select-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 38px;
+    padding: 0 12px;
+    cursor: pointer;
+    font-size: 11px;
+}
+
+.searchable-select-option:hover,
+.searchable-select-option.is-active,
+.searchable-select-option.is-selected:hover,
+.searchable-select-option.is-selected.is-active {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+
+.searchable-select-option.is-selected {
+    background: #dbeafe;
+    font-weight: 500;
+}
+
+/* The one-line label (`flex: 1` via the existing .searchable-select-value
+   ellipsis class) must never squeeze the checkbox/checkmark away, so they
+   stay non-shrinking at the row's right edge. */
+.searchable-select-option input[type="checkbox"],
+.searchable-select-check {
+    flex-shrink: 0;
+}
+
+/* ===========================
+   Tags
+=========================== */
+
+.searchable-select-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.searchable-select-tag {
+    display: flex;
+    align-items: center;
+    background: #2563eb;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.searchable-select-tag button {
+    background: transparent;
+    border: none;
+    color: white;
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+/* ===========================
+   Errors
+=========================== */
+
+.filter-error {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+/* ===========================
+   Buttons
+=========================== */
+
+.filter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    background: #ffffff;
+    padding-top: 10px;
+    box-shadow: 0 -6px 8px -8px rgba(0, 0, 0, 0.25);
+}
+
+.dark .filter-actions {
+    background: hsl(var(--card));
+    box-shadow: 0 -6px 8px -8px rgba(0, 0, 0, 0.6);
+}
+
+.filter-reset-btn,
+.filter-apply-btn {
+    min-width: 87px;
+    height: 30px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.filter-reset-btn {
+    border: 1px solid #d1d5db;
+    background: white;
+}
+
+.filter-apply-btn {
+    border: none;
+    background: #2563eb;
+    color: white;
+}
+
+.filter-apply-btn:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+/* ===========================
+   Responsive
+=========================== */
+
+@media (max-width:768px) {
+
+    .filter-container {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-actions {
+        flex-direction: column-reverse;
+    }
+
+    .filter-reset-btn,
+    .filter-apply-btn {
+        width: 100%;
+    }
+
+}
+
+.searchable-select-selected {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #111827;
+    font-size: 11px;
+}
+
+.filter-full-width {
+    grid-column: 1 / -1;
+}
+
+.searchable-select-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+
+
+
+/* =========================================================
+   Generic Filter - Dark Mode
+   ========================================================= */
+
+.dark .generic-filter {
+    color: hsl(var(--foreground));
+}
+
+/* ===========================
+   Labels
+   =========================== */
+
+.dark .filter-label {
+    color: hsl(var(--foreground));
+}
+
+.dark .filter-required {
+    color: #f87171;
+}
+
+/* ===========================
+   Inputs
+   =========================== */
+
+.dark .filter-input,
+.dark .searchable-select-control {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+}
+
+.dark .filter-input::placeholder,
+.dark .searchable-select-placeholder {
+    color: hsl(var(--muted-foreground));
+}
+
+.dark .filter-input:focus,
+.dark .searchable-select-control.is-open {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+/* ===========================
+   Searchable Select
+   =========================== */
+
+.dark .searchable-select {
+    color: hsl(var(--foreground));
+}
+
+.dark .searchable-select-selected {
+    color: hsl(var(--foreground));
+}
+
+.dark .searchable-select-arrow {
+    color: hsl(var(--muted-foreground));
+}
+
+/* ===========================
+   Dropdown
+   =========================== */
+
+.dark .searchable-select-dropdown {
+    background: hsl(var(--popover));
+    color: hsl(var(--popover-foreground));
+    border-color: hsl(var(--border));
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* ===========================
+   Search Input
+   =========================== */
+
+.dark .searchable-select-search {
+    border-bottom-color: hsl(var(--border));
+    background: hsl(var(--popover));
+}
+
+.dark .searchable-select-search-input {
+    background: hsl(var(--input));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--border));
+}
+
+.dark .searchable-select-search-input::placeholder {
+    color: hsl(var(--muted-foreground));
+}
+
+.dark .searchable-select-search-input:focus {
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+}
+
+/* ===========================
+   Options
+   =========================== */
+
+.dark .searchable-select-option {
+    color: hsl(var(--popover-foreground));
+}
+
+.dark .searchable-select-option:hover,
+.dark .searchable-select-option.is-active,
+.dark .searchable-select-option.is-selected:hover,
+.dark .searchable-select-option.is-selected.is-active {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+
+.dark .searchable-select-option.is-selected {
+    background: hsl(var(--primary) / 0.18);
+    color: hsl(var(--foreground));
+}
+
+/* ===========================
+   Tags
+   =========================== */
+
+.dark .searchable-select-tag {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+
+.dark .searchable-select-tag button {
+    color: hsl(var(--primary-foreground));
+}
+
+/* ===========================
+   Errors
+   =========================== */
+
+.dark .filter-error {
+    color: #f87171;
+}
+
+/* ===========================
+   Buttons
+   =========================== */
+
+.dark .filter-reset-btn {
+    background: hsl(var(--card));
+    color: hsl(var(--foreground));
+    border-color: hsl(var(--muted-foreground) / 0.35);
+}
+
+.dark .filter-reset-btn:hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+}
+
+.dark .filter-apply-btn {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+
+.dark .filter-apply-btn:hover {
+    opacity: 0.9;
+}
+
+.dark .filter-apply-btn:disabled {
+    opacity: 0.5;
+}
+
+/* ===========================
+   Scrollable Options
+   =========================== */
+
+.dark .virtualized-options-container {
+    scrollbar-color: #4b5563 transparent;
+}
+
+/* ===========================
+   Native Select Support
+   =========================== */
+
+.dark .filter-input,
+.dark select.filter-input,
+.dark .searchable-select-search-input {
+    color-scheme: dark;
+}
+
+/* ===========================
+   Date Inputs
+   =========================== */
+
+.dark .filter-input[type="date"] {
+    color-scheme: dark;
+}
+
+/* ===========================
+   Month Inputs
+   =========================== */
+
+.dark .filter-input[type="month"] {
+    color-scheme: dark;
+}
+
+/* ===========================
+   Number Inputs
+   =========================== */
+
+.dark .filter-input[type="number"] {
+    color-scheme: dark;
+}
+/* ===========================
+   Option tooltip (full label of a truncated row)
+   =========================== */
+/* Radix positions the bubble and exposes how much room is free on the
+   chosen side; cap the bubble at a readable column or that room, whichever
+   is smaller, so a long comma-joined label wraps into a few lines instead
+   of stretching across the entire viewport. The first declaration is the
+   fallback for engines without the custom property. */
+.searchable-select-option-tooltip {
+    max-width: min(28rem, calc(100vw - 16px));
+    max-width: min(28rem, var(--radix-tooltip-content-available-width, calc(100vw - 16px)));
+    overflow-wrap: anywhere;
+}

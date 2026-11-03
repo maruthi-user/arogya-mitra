@@ -1,5 +1,5 @@
 import { T, LANG, LANGS, lbl } from '../../i18n/index.js';
-import { VILLAGES } from '../../data/reference-data.js';
+import { VILLAGES } from '../../services/reference-catalog.js';
 
 import { Voice } from '../../features/voice/speech-service.js';
 import { Store } from '../../storage/browser-store.js';

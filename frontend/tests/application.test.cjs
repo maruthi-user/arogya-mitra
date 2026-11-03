@@ -18,10 +18,10 @@ test('patient continues without login and books through APIs with a CSRF token',
 test('provider and admin get separate login pages and API-backed workspaces',async()=>{
   const {element,click,submit,calls}=await boot();await click('chooseRole',{role:'provider'});
   assert.match(element('app').innerHTML,/auth-brand-panel/);assert.equal(element('app').dataset.screen,'login');
-  element('loginUsername').value='provider';element('loginPassword').value='Provider-password-123!';await submit('login');assert.equal(element('app').dataset.screen,'dash');
+  element('loginUsername').value='provider';element('loginPassword').value='Provider-password-123!';await submit('login');assert.equal(element('app').dataset.screen,'careDashboard');
   for(const screen of ['providerBookings','schedule','providerProfile']){await click('go',{s:screen});assert.equal(element('app').dataset.screen,screen);}
   await click('logout');await click('chooseRole',{role:'admin'});element('loginUsername').value='admin';element('loginPassword').value='Admin-password-123!';await submit('login');
-  assert.equal(element('app').dataset.screen,'adminHome');assert.ok(calls.some(c=>c.path==='/admin/applications'));
+  assert.equal(element('app').dataset.screen,'careDashboard');assert.ok(calls.some(c=>c.path==='/admin/applications'));
   for(const screen of ['adminApplications','adminNotifications','adminPharmacies','adminRequests','adminAudit']){await click('go',{s:screen});assert.equal(element('app').dataset.screen,screen);}
 });
 test('unauthenticated navigation cannot open a provider dashboard',async()=>{
@@ -44,6 +44,11 @@ test('patient pages render in Telugu and English and retain voice text fallback'
 });
 test('registration and activation use real form actions without a profile picker',async()=>{
   const {element,click}=await boot();await click('go',{s:'register'});assert.match(element('app').innerHTML,/data-form-action="reviewRegistration"/);
-  for(const field of ['regEmail','regPhone','regUsername','regOrganization','regDesignation','regRegistrationId'])assert.match(element('app').innerHTML,new RegExp('id="'+field+'"'));
+  for(const field of ['regName','regEmail','regPhone','regTerms'])assert.match(element('app').innerHTML,new RegExp('id="'+field+'"'));
+  assert.doesNotMatch(element('app').innerHTML,/id="reg(?:Username|Organization|Designation|RegistrationId|Documents|BusinessType)"/);
   await click('go',{s:'activate'});assert.match(element('app').innerHTML,/activationPassword/);
+});
+
+test('React host teardown removes healthcare listeners before remounting',async()=>{
+  const {app,listenerCount}=await boot();assert.ok(listenerCount()>0);app.destroy();assert.equal(listenerCount(),0);
 });

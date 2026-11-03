@@ -12,7 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={"spring.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1","app.seed-demo=true","app.notifications.scheduling=false"})
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties={"spring.profiles.active=test","spring.datasource.url=jdbc:h2:mem:test;DB_CLOSE_DELAY=-1","app.seed-demo=true","app.notifications.scheduling=false"})
 class ClinicServiceTest {
     @Autowired ClinicService service;
     @Autowired TestRestTemplate http;

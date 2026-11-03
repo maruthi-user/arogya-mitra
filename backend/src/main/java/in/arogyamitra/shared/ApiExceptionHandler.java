@@ -9,8 +9,14 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 
+@org.springframework.core.annotation.Order(-1)
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    ResponseEntity<Map<String,String>> authentication(){return ResponseEntity.status(401).body(Map.of("message","Unable to sign in. Check your credentials and account activation."));}
+    @ExceptionHandler(in.arogyamitra.platform.exception.TooManyRequestsException.class)
+    ResponseEntity<Map<String,String>> throttled(in.arogyamitra.platform.exception.TooManyRequestsException e){return ResponseEntity.status(429).header("Retry-After",String.valueOf(e.getRetryAfterSeconds())).body(Map.of("message",e.getMessage()));}
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<Map<String,String>> conflict(){return ResponseEntity.status(409).body(Map.of("message","These details already exist or conflict with another record."));}
     @ExceptionHandler(ResponseStatusException.class)

@@ -8,6 +8,6 @@ export function ReviewDialog({title,details,confirmLabel='Submit',cancelLabel='E
     let result=null;
     dialog.querySelector('[data-review-cancel]').addEventListener('click',()=>dialog.close());
     dialog.querySelector('form').addEventListener('submit',event=>{event.preventDefault();result={reason:dialog.querySelector('textarea')?.value.trim()||''};dialog.close();});
-    dialog.addEventListener('close',()=>{dialog.remove();resolve(result);},{once:true});document.body.append(dialog);dialog.showModal();
+    dialog.addEventListener('close',()=>{dialog.remove();resolve(result);},{once:true});(document.getElementById('legacy-root')||document.body).append(dialog);dialog.showModal();
   });
 }

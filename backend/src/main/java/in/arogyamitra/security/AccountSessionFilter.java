@@ -14,7 +14,7 @@ public class AccountSessionFilter extends OncePerRequestFilter {
     @Override protected void doFilterInternal(HttpServletRequest request,HttpServletResponse response,FilterChain chain)throws ServletException,IOException{
         var auth=SecurityContextHolder.getContext().getAuthentication();
         if(auth!=null&&auth.getPrincipal() instanceof Identity identity&&!identity.accountId().isBlank()){
-            var valid=db.queryForObject("SELECT COUNT(*) FROM accounts WHERE id=? AND active=TRUE AND credential_version=?",Integer.class,identity.accountId(),identity.credentialVersion());
+            var valid=db.queryForObject("SELECT COUNT(*) FROM accounts WHERE id=? AND active=TRUE AND suspended=FALSE AND credential_version=?",Integer.class,identity.accountId(),identity.credentialVersion());
             if(valid==null||valid==0){var session=request.getSession(false);if(session!=null)session.invalidate();SecurityContextHolder.clearContext();}
         }
         chain.doFilter(request,response);

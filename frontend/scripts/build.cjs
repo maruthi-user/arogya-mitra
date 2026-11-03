@@ -9,6 +9,7 @@ for (const name of ['index.html', 'src']) {
   const source = path.join(root, name);
   if (fs.existsSync(source)) fs.cpSync(source, path.join(out, name), { recursive: true });
 }
+fs.copyFileSync(path.join(root,'legacy.html'),path.join(out,'index.html'));
 // API_BASE_URL is public routing configuration, never a secret.
 if (fs.existsSync(path.join(root,'public'))) fs.cpSync(path.join(root,'public'),out,{recursive:true});
 fs.writeFileSync(path.join(out, 'src/config/runtime-config.js'), 'export const config = Object.freeze('+JSON.stringify({dataMode:'api',apiBaseUrl:process.env.API_BASE_URL||'/api'})+');\n');

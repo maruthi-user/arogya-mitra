@@ -1,0 +1,375 @@
+{
+  "villages": [
+    {
+      "id": "town",
+      "te": "సమీప పట్టణం",
+      "en": "Nearby town"
+    },
+    {
+      "id": "rama",
+      "te": "రామాపురం",
+      "en": "Ramapuram"
+    },
+    {
+      "id": "krishna",
+      "te": "కృష్ణాపురం",
+      "en": "Krishnapuram"
+    },
+    {
+      "id": "gopala",
+      "te": "గోపాలపురం",
+      "en": "Gopalapuram"
+    },
+    {
+      "id": "venkata",
+      "te": "వెంకటాపురం",
+      "en": "Venkatapuram"
+    }
+  ],
+  "medicines": [
+    {
+      "id": "para",
+      "te": "పారాసెటమాల్",
+      "en": "Paracetamol",
+      "icon": "💊",
+      "rx": false,
+      "kw": [
+        "పారాసెటమాల్",
+        "డోలో",
+        "paracetamol",
+        "dolo"
+      ]
+    },
+    {
+      "id": "ors",
+      "te": "ORS పొడి",
+      "en": "ORS powder",
+      "icon": "🧂",
+      "rx": false,
+      "kw": [
+        "ors",
+        "ఓఆర్ఎస్",
+        "ఉప్పు చక్కెర"
+      ]
+    },
+    {
+      "id": "cetirizine",
+      "te": "సెటిరిజిన్ (అలర్జీ)",
+      "en": "Cetirizine (allergy)",
+      "icon": "💊",
+      "rx": false,
+      "kw": [
+        "సెటిరిజిన్",
+        "అలర్జీ",
+        "cetirizine",
+        "allergy"
+      ]
+    },
+    {
+      "id": "antacid",
+      "te": "ఆంటాసిడ్ (కడుపు మంట)",
+      "en": "Antacid (acidity)",
+      "icon": "💊",
+      "rx": false,
+      "kw": [
+        "ఆంటాసిడ్",
+        "మంట",
+        "antacid",
+        "gelusil"
+      ]
+    },
+    {
+      "id": "cough",
+      "te": "దగ్గు సిరప్",
+      "en": "Cough syrup",
+      "icon": "🧴",
+      "rx": false,
+      "kw": [
+        "సిరప్",
+        "syrup"
+      ]
+    },
+    {
+      "id": "iron",
+      "te": "ఐరన్ మాత్రలు",
+      "en": "Iron tablets",
+      "icon": "💊",
+      "rx": false,
+      "kw": [
+        "ఐరన్",
+        "iron"
+      ]
+    },
+    {
+      "id": "amox",
+      "te": "యాంటీబయాటిక్",
+      "en": "Antibiotic",
+      "icon": "💊",
+      "rx": true,
+      "kw": [
+        "యాంటీబయాటిక్",
+        "అమాక్సిసిలిన్",
+        "antibiotic",
+        "amoxicillin"
+      ]
+    }
+  ],
+  "symptoms": [
+    {
+      "id": "fever",
+      "icon": "🌡️",
+      "te": "జ్వరం",
+      "en": "Fever",
+      "types": [
+        "mbbs",
+        "rmp",
+        "ayush"
+      ],
+      "kw": [
+        "జ్వరం",
+        "జ్వర",
+        "fever",
+        "jwaram"
+      ]
+    },
+    {
+      "id": "cough",
+      "icon": "😮‍💨",
+      "te": "దగ్గు",
+      "en": "Cough or cold",
+      "types": [
+        "mbbs",
+        "rmp",
+        "ayush"
+      ],
+      "kw": [
+        "దగ్గు",
+        "జలుబు",
+        "cough",
+        "cold",
+        "daggu"
+      ]
+    },
+    {
+      "id": "stomach",
+      "icon": "🤢",
+      "te": "కడుపు నొప్పి",
+      "en": "Stomach pain",
+      "types": [
+        "mbbs",
+        "rmp",
+        "ayush"
+      ],
+      "kw": [
+        "కడుపు",
+        "వాంతి",
+        "విరేచన",
+        "stomach",
+        "vomit",
+        "vomiting",
+        "diarrhoea",
+        "diarrhea",
+        "loose motion"
+      ]
+    },
+    {
+      "id": "head",
+      "icon": "🤕",
+      "te": "తలనొప్పి",
+      "en": "Headache",
+      "types": [
+        "mbbs",
+        "rmp",
+        "ayush"
+      ],
+      "kw": [
+        "తల",
+        "headache",
+        "head"
+      ]
+    },
+    {
+      "id": "wound",
+      "icon": "🩹",
+      "te": "గాయం",
+      "en": "Wound",
+      "types": [
+        "rmp",
+        "mbbs"
+      ],
+      "kw": [
+        "గాయం",
+        "దెబ్బ",
+        "wound",
+        "injury",
+        "cut"
+      ]
+    },
+    {
+      "id": "other",
+      "icon": "➕",
+      "te": "ఇతర",
+      "en": "Other",
+      "types": [
+        "mbbs",
+        "rmp",
+        "ayush"
+      ],
+      "kw": [
+        "ఇతర",
+        "other"
+      ]
+    }
+  ],
+  "redFlags": [
+    {
+      "id": "chest",
+      "icon": "💔",
+      "te": "ఛాతి నొప్పి",
+      "en": "Chest pain",
+      "kw": [
+        "ఛాతి",
+        "గుండె",
+        "chest",
+        "heart"
+      ]
+    },
+    {
+      "id": "breath",
+      "icon": "😮",
+      "te": "ఊపిరి ఆడడం లేదు",
+      "en": "Cannot breathe",
+      "kw": [
+        "ఊపిరి",
+        "breath",
+        "breathing"
+      ]
+    },
+    {
+      "id": "snake",
+      "icon": "🐍",
+      "te": "పాము కాటు",
+      "en": "Snake bite",
+      "kw": [
+        "పాము",
+        "snake"
+      ]
+    },
+    {
+      "id": "bleed",
+      "icon": "🩸",
+      "te": "ఎక్కువ రక్తస్రావం",
+      "en": "Heavy bleeding",
+      "kw": [
+        "రక్త",
+        "bleed",
+        "bleeding",
+        "blood"
+      ]
+    }
+  ],
+  "emergencyKeywords": [
+    "108",
+    "అత్యవసరం",
+    "అంబులెన్స్",
+    "ambulance",
+    "emergency"
+  ],
+  "serviceKinds": [
+    {
+      "id": "home_visit",
+      "te": "ఇంటికి వైద్య సందర్శన",
+      "en": "Home visit"
+    },
+    {
+      "id": "op",
+      "te": "ఆసుపత్రి / క్లినిక్ OP",
+      "en": "Hospital / clinic OP"
+    },
+    {
+      "id": "medicine",
+      "te": "మందుల అభ్యర్థన",
+      "en": "Medicines"
+    },
+    {
+      "id": "delivery",
+      "te": "మందుల డెలివరీ",
+      "en": "Medicine delivery"
+    },
+    {
+      "id": "lab",
+      "te": "ల్యాబ్ పరీక్ష",
+      "en": "Lab test"
+    },
+    {
+      "id": "checkup",
+      "te": "ఇంటివద్ద ఆరోగ్య పరీక్ష",
+      "en": "Home check-up"
+    },
+    {
+      "id": "ambulance",
+      "te": "అంబులెన్స్ సహాయం",
+      "en": "Ambulance assistance"
+    }
+  ],
+  "businessTypes": [
+    {
+      "id": "practitioner",
+      "services": [
+        "home_visit",
+        "op",
+        "checkup"
+      ],
+      "en": "Practitioner",
+      "te": "వైద్య నిపుణుడు"
+    },
+    {
+      "id": "hospital",
+      "services": [
+        "op",
+        "home_visit",
+        "checkup",
+        "lab"
+      ],
+      "en": "Hospital",
+      "te": "ఆసుపత్రి"
+    },
+    {
+      "id": "clinic",
+      "services": [
+        "op",
+        "home_visit",
+        "checkup",
+        "lab"
+      ],
+      "en": "Clinic",
+      "te": "క్లినిక్"
+    },
+    {
+      "id": "pharmacy",
+      "services": [
+        "medicine",
+        "delivery"
+      ],
+      "en": "Pharmacy",
+      "te": "మందుల దుకాణం"
+    },
+    {
+      "id": "laboratory",
+      "services": [
+        "lab",
+        "checkup"
+      ],
+      "en": "Laboratory",
+      "te": "పరీక్షా కేంద్రం"
+    },
+    {
+      "id": "ambulance",
+      "services": [
+        "ambulance"
+      ],
+      "en": "Ambulance operator",
+      "te": "అంబులెన్స్ సేవ"
+    }
+  ]
+}

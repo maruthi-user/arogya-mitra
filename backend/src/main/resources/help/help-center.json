@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "label": "Getting Started",
+      "icon": "flag",
+      "items": [
+        { "id": "sec-overview", "title": "What is this application?" },
+        { "id": "sec-login", "title": "Login and password" }
+      ]
+    }
+  ]
+}

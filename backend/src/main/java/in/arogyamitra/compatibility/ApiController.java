@@ -17,7 +17,7 @@ public class ApiController {
     public ApiController(ClinicService service,AccessService access,AccountRepository accounts,ProviderService providers,BookingService bookings,CatalogRepository store){this.service=service;this.access=access;this.accounts=accounts;this.providers=providers;this.bookings=bookings;this.store=store;}
     @GetMapping("/state") public Map<String,Object> state(){
         var u=access.optional();
-        var visible=providers.list(null,null,null).stream().filter(p->accounts.publicProvider((String)p.get("id"))||(u!=null&&(u.role().equals("admin")||u.subjectId().equals(p.get("id"))))).toList();
+        var visible=providers.list(null,null,null).stream().filter(p->(accounts.publicProvider((String)p.get("id"))&&Set.of("mbbs","rmp","ayush").contains(p.get("type")))||(u!=null&&(u.role().equals("admin")||u.subjectId().equals(p.get("id"))))).toList();
         return Map.of("providers",visible,"pharmacies",store.entities("pharmacies"),"bookings",u==null?List.of():bookings.list(u.role().equals("patient")?u.subjectId():null,u.role().equals("provider")?u.subjectId():null,null));
     }
     @PatchMapping("/entities/{id}/open") public Map<String,Boolean> open(@PathVariable String id,@RequestBody Map<String,Object> body){access.provider(id);service.open(id,bool(body,"open"));return Map.of("ok",true);}

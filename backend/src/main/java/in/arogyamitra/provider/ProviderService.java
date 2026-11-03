@@ -10,8 +10,9 @@ import in.arogyamitra.shared.persistence.CatalogRepository;
 import static in.arogyamitra.shared.ApiInput.*;
 @Service
 public class ProviderService {
+    private final in.arogyamitra.reference.ReferenceCatalog reference;
     private final CatalogRepository store;
-    public ProviderService(CatalogRepository store){this.store=store;}
+    public ProviderService(CatalogRepository store,in.arogyamitra.reference.ReferenceCatalog reference){this.reference=reference;this.store=store;}
     public List<Map<String,Object>> list(String village,String type,Boolean open){return store.entities("providers").stream()
         .filter(p->village==null||village.equals(p.get("village")))
         .filter(p->type==null||type.equals(p.get("type")))
@@ -20,7 +21,7 @@ public class ProviderService {
     @Transactional public Map<String,Object> create(Map<String,Object> input) {
         String name=text(input,"name"),type=text(input,"type"),village=text(input,"village"),phone=text(input,"phone");
         if(name.length()>80 || !Set.of("mbbs","rmp","ayush").contains(type)
-            || !Set.of("rama","krishna","gopala","venkata").contains(village) || !phone.matches("\\d{10}")) throw invalid("Invalid provider details");
+            || !reference.contains("villages",village) || !phone.matches("\\d{10}")) throw invalid("Invalid provider details");
         var profile=new HashMap<>(input);profile.putIfAbsent("fee",0);profile.putIfAbsent("services","");
         validateProfile(profile);
         String id="p-"+UUID.randomUUID();

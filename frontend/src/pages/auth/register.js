@@ -1,19 +1,14 @@
-import { AuthLayout } from '../../layouts/auth-layout.js';
-import { Input, Select } from '../../components/forms/field.js';
-import { Button } from '../../components/ui/button.js';
-import { VILLAGES } from '../../data/reference-data.js';
-import { LANG,lbl } from '../../i18n/index.js';
+﻿import { Brand } from '../../components/ui/brand.js';
+import { Input } from '../../components/forms/field.js';
+import { LANG } from '../../i18n/index.js';
 export function createRegistrationPage(){return ()=>{
-  const l=(te,en)=>LANG==='te'?te:en;
-  return {voice:null,html:AuthLayout({title:l('సేవలు అందించడానికి చేరండి','Care starts with you'),description:l('మీ వివరాలు నమోదు చేయండి. సమీక్ష తర్వాత ఖాతాను ప్రారంభించవచ్చు.','Apply to join Arogya Mitra. We’ll review your details before activating your provider account.'),body:`<form data-form-action="reviewRegistration" class="auth-form registration-form"><div class="form-grid">
-    ${Input({id:'regName',label:l('పూర్తి పేరు','Full name'),attrs:{required:true,maxlength:80,autocomplete:'name'}})}
-    ${Input({id:'regUsername',label:l('యూజర్‌నేమ్','Username'),attrs:{required:true,minlength:3,maxlength:50,pattern:'[A-Za-z0-9_.-]{3,50}',autocomplete:'username'}})}
-    ${Input({id:'regEmail',label:l('ఇమెయిల్','Email address'),type:'email',attrs:{required:true,maxlength:100,autocomplete:'email'}})}
-    ${Input({id:'regPhone',label:l('ఫోన్ నంబర్','Phone number'),type:'tel',attrs:{required:true,pattern:'(\\+91)?[6-9][0-9]{9}',placeholder:'9876543210',autocomplete:'tel'}})}
-    ${Input({id:'regOrganization',label:l('ఆసుపత్రి / క్లినిక్ పేరు','Hospital / clinic / organization'),attrs:{required:true,maxlength:100,autocomplete:'organization'}})}
-    ${Select({id:'regDesignation',label:l('వృత్తి','Designation'),options:[{value:'mbbs',label:'Doctor (MBBS)'},{value:'rmp',label:'RMP'},{value:'ayush',label:'AYUSH'}]})}
-    ${Select({id:'regVillage',label:l('ప్రాంతం','Practice location'),options:VILLAGES.map(v=>({value:v.id,label:lbl(v)}))})}
-    ${Input({id:'regRegistrationId',label:l('రిజిస్ట్రేషన్ ID (ఐచ్ఛికం)','Professional registration ID (optional)'),attrs:{maxlength:100}})}
-    </div><div class="inline-note">${l('దరఖాస్తు ఆమోదం వృత్తిపరమైన ధృవీకరణ కాదు.','Account approval does not imply professional credential verification. Registration verification is not yet connected to an official registry.')}</div>
-    ${Button({label:l('సమీక్షించి పంపండి','Review application'),variant:'accent',attrs:{type:'submit'}})}<button class="text-button" type="button" data-a="chooseRole" data-role="provider">${l('రద్దు','Cancel and return to login')}</button></form>`})};
+ const l=(te,en)=>LANG==='te'?te:en;
+ return {voice:null,html:`<div class="provider-signup"><header class="signup-header">${Brand()}<button class="language-pill" data-a="toggleLanguage">English / తెలుగు</button></header><section class="signup-card"><aside class="signup-story"><svg viewBox="0 0 100 90" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M15 75V40h70v35H15Zm-5-35 12-20h56l12 20H10Z"/><rect x="35" y="8" width="30" height="25" rx="4" fill="#e1f7ec"/><path d="M50 13v15m-7-7h14M30 75V52h17v23m13-22h13v14H60Z"/></svg><h2>${l('సంరక్షణను చేరువ చేయండి.','Bring care closer.')}</h2><p>${l('నమోదు చేసుకోండి. నిర్వాహకుని ఆమోదం తర్వాత ప్రవేశించండి.','Register your details. Sign in after admin approval.')}</p><ol><li>${l('నమోదు పంపండి','Submit registration')}</li><li>${l('నిర్వాహకుని సమీక్ష','Admin review')}</li><li>${l('ఆమోదం తర్వాత ప్రవేశించండి','Sign in after approval')}</li></ol></aside><div class="signup-content"><h1>${l('సేవాదారు ఖాతాను సృష్టించండి','Create provider account')}</h1><p class="signup-lead">${l('మీ సంప్రదింపు వివరాలతో ప్రారంభించండి.','Start with your contact details.')}</p><form data-form-action="reviewRegistration" class="auth-form registration-form">
+ ${Input({id:'regName',label:l('పూర్తి పేరు','Full name'),attrs:{required:true,minlength:2,maxlength:80,autocomplete:'name',placeholder:l('మీ పూర్తి పేరు','Enter your full name')}})}
+ ${Input({id:'regEmail',type:'email',label:l('ఇమెయిల్ చిరునామా','Email address'),attrs:{required:true,maxlength:100,autocomplete:'email',placeholder:l('మీ ఇమెయిల్ చిరునామా','Enter your email address')}})}
+ ${Input({id:'regPhone',type:'tel',label:l('మొబైల్ నంబర్','Mobile number'),attrs:{required:true,pattern:'(\\+91)?[6-9][0-9]{9}',autocomplete:'tel',placeholder:l('మీ మొబైల్ నంబర్','Enter your mobile number')}})}
+ <div class="inline-note">${l('మీ పేరుతో యూజర్‌నేమ్ సృష్టిస్తాము. ఆమోదం తర్వాత యూజర్‌నేమ్ మరియు తాత్కాలిక పాస్‌వర్డ్ ఇమెయిల్ చేస్తాము. మొదటి ప్రవేశంలో పాస్‌వర్డ్ మార్చాలి.','We generate a username from your name. After admin approval, we email your username and temporary password. You must change the password at first sign-in.')}</div>
+ <label class="signup-consent"><input id="regTerms" type="checkbox" required> <span>${l('నేను దిగువ నిబంధనలు మరియు గోప్యతా విధానాన్ని అంగీకరిస్తున్నాను.','I agree to the Terms and Privacy Policy below.')}</span></label>
+ <details class="signup-policy"><summary>${l('నిబంధనలు & గోప్యతా విధానం','Terms & Privacy Policy')}</summary><p>${l('ఖచ్చితమైన సమాచారం సమర్పించండి. సేవలు ప్రజలకు కనిపించడానికి వ్యాపారం మరియు సేవల ఆమోదం అవసరం. ఆమోదం అధికారిక వృత్తిపరమైన ధృవీకరణ కాదు.','Provide accurate information. Businesses and services require review before public listing. Approval is not official professional credential verification.')}</p><p>${l('ఖాతా నిర్వహణకు సంప్రదింపు వివరాలు, వ్యాపార పత్రాలు మరియు అభ్యర్థనలను నిల్వ చేస్తాము. సమర్పించిన పత్రాలను మీ సంస్థ మరియు నిర్వాహకులు మాత్రమే చూడగలరు. ఆమోద వివరాలు ఇమెయిల్ ద్వారా పంపబడతాయి.','We store contact details, business evidence and requests to operate your account. Submitted evidence is accessible to your organisation and administrators. Approval credentials and decisions are sent by email.')}</p></details>
+ <button class="btn accent signup-submit" type="submit">${l('ఖాతాను సృష్టించండి','Create account')}</button></form><p class="signup-login">${l('ఇప్పటికే ఖాతా ఉందా?','Already registered?')} <button class="text-button" data-a="chooseRole" data-role="provider">${l('ప్రవేశించండి','Sign in')}</button></p><p class="signup-footnote">${l('నిర్వాహకుని ఆమోదం తర్వాత మాత్రమే మీ సేవలు రోగులకు కనిపిస్తాయి.','Your services appear to patients after admin approval.')}</p></div></section></div>`};
 };}

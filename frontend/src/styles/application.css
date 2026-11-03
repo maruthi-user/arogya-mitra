@@ -26,3 +26,60 @@ html{scroll-behavior:smooth}body{font-family:Inter,"Nirmala UI","Segoe UI",syste
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}button{transition:none}}
 .reference-number{font-family:ui-monospace,monospace;font-size:13px;overflow-wrap:anywhere;color:var(--accent)}
 @media(max-width:767px){.app-header .mobile-brand{display:block}.app-header .mobile-brand .brand-lockup>span{display:none}.app-header .mobile-brand img{width:36px;height:36px}.app-header{gap:8px}}
+
+/* Service platform: touch targets, readable forms and responsive service cards. */
+.care-toolbar,.care-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:20px 0}
+.care-filters .field{flex:1;min-width:160px}.care-hero{padding:28px;border-radius:20px;background:linear-gradient(120deg,#e2f4ef,#edf4ff);margin:18px 0;color:#173e39}.care-hero h1{font-size:clamp(1.7rem,4vw,2.6rem);max-width:780px}.care-hero p{max-width:720px;line-height:1.7}.care-card{display:flex;flex-direction:column;gap:10px}.care-card h2{font-size:1.25rem}.care-card .actions{margin-top:auto}.care-request{max-width:850px;margin:auto}.care-check{display:inline-flex;align-items:center;gap:8px;padding:8px;min-height:44px}.care-check input{width:20px;height:20px}fieldset{border:1px solid #cbd8d4;border-radius:12px;padding:12px;min-width:0}details{margin-top:16px}summary{cursor:pointer;padding:10px 0;min-height:44px}details li{padding:8px 0}.status-badge.accepted,.status-badge.completed{background:#d9f3e6;color:#145536}.status-badge.in_progress{background:#e1eaff;color:#254481}.nav-links{overflow:auto}.nav-links button{flex-shrink:0}:focus-visible{outline:3px solid #266ab0;outline-offset:3px}
+@media(max-width:700px){.care-toolbar .btn{flex:1}.care-filters{display:grid;grid-template-columns:1fr}.care-hero{padding:20px}.care-card .actions{flex-wrap:wrap}.care-toolbar{gap:8px}.nav-links{overflow-x:auto}.care-request .form-grid{grid-template-columns:1fr}}
+
+/* Reference role selection: full cards on computers, compact rows on phones. */
+.care-entry{position:relative;isolation:isolate;min-height:100dvh;background:#fffdfa;color:#064b3e;overflow:hidden}
+.entry-header{border-bottom:1px solid #b3cec6;background:#ffffffa6}
+.entry-header-inner{max-width:1320px;margin:auto;min-height:112px;padding:20px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.care-entry .brand-lockup{font-size:28px;gap:8px;letter-spacing:-.8px}
+.care-entry .brand-lockup img{width:66px;height:66px}
+.entry-language{display:flex;align-items:center;gap:7px;border:1px solid #afd6cd;border-radius:28px;padding:3px;background:#fff;color:#124e42;font:inherit;font-size:16px;cursor:pointer;flex-shrink:0}
+.entry-language>span:not(.language-divider){padding:6px 18px;border-radius:24px;font-weight:650}
+.entry-language .selected{background:linear-gradient(120deg,#078374,#006657);color:white;box-shadow:inset 0 0 0 1px #006c5b}
+.entry-language .language-divider{height:20px;width:1px;background:#b3cfc7}
+.language-short{display:none}
+.entry-main{position:relative;z-index:1;max-width:1240px;padding:34px 40px 22px;margin:auto}
+.entry-intro{text-align:center;margin-bottom:32px}
+.care-entry .entry-intro h1{display:block;flex:initial;margin:0 0 10px;color:#043f33;font-size:clamp(40px,4.5vw,60px);font-weight:800;line-height:1.25;letter-spacing:-1.8px;text-align:center}
+.entry-intro h1 span{position:relative;white-space:nowrap}
+.entry-intro h1 span::after{content:'';position:absolute;bottom:-7px;left:4%;width:78%;height:10px;border-top:4px solid #ffab32;border-radius:50%;transform:rotate(-4deg)}
+.entry-intro>p{font-size:24px;color:#455760;margin:16px 0 0}
+.entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.entry-card{border:1px solid #a5d6cc;border-radius:18px;padding:24px 24px 20px;text-align:center;background:linear-gradient(130deg,#f7fffb,#fcfefa);display:flex;flex-direction:column;align-items:center;min-width:0}
+.entry-provider{border-color:#d3c9b7;background:linear-gradient(130deg,#fffefb,#fcf9f2)}
+.entry-admin{border-color:#9bcdf0;background:linear-gradient(130deg,#f4fbff,#f8fcff)}
+.entry-icon{display:grid;place-items:center;width:104px;height:96px;border-radius:24px;color:#087f67;background:linear-gradient(130deg,#e6fbed,#ccf7df);margin-bottom:10px;flex-shrink:0}
+.entry-icon svg{width:68px;height:68px}
+.entry-provider .entry-icon{background:linear-gradient(130deg,#fff3dd,#fcead2);color:#10483b}
+.entry-admin .entry-icon{background:linear-gradient(130deg,#e1f3ff,#c3e7ff);color:#0b4b53}
+.entry-card-body{display:flex;flex-direction:column;align-items:stretch;flex:1;width:100%;min-width:0}
+.care-entry .entry-card h2{color:#064b3e;font-size:32px;letter-spacing:-.6px;line-height:1.25;margin:0 0 2px;font-weight:800}
+.entry-description{font-size:17px;line-height:1.5;color:#354650;margin:0}
+.entry-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 10px;margin:16px -5px 26px}
+.entry-tags span{border-radius:24px;background:#dffbea;padding:3px 18px;color:#172b25;font-size:14px;line-height:1.7}
+.entry-provider .entry-tags span{background:#ebf5dc}
+.entry-admin-details{font-size:17px;color:#455760;line-height:1.65;margin:20px 0 28px}
+.entry-actions{margin-top:auto;padding-top:0;display:flex;flex-direction:column;gap:8px}
+.entry-button{width:100%;min-height:46px;border:1.5px solid #006655;background:transparent;border-radius:11px;color:#073f34;font:inherit;font-size:19px;font-weight:700;line-height:1.3;padding:9px 8px;cursor:pointer}
+.entry-patient .entry-button{background:linear-gradient(110deg,#087f70,#006b5c);color:white;border-color:#087969;box-shadow:inset 0 1px 3px #ffffff26}
+.entry-note{font-size:16px;color:#455760;margin:0}
+.entry-register{align-self:center;border:0;background:transparent;text-decoration:underline;text-underline-offset:3px;color:#006957;font:inherit;font-size:16px;font-weight:600;cursor:pointer;padding:0;min-height:28px}
+.entry-admin .entry-actions{padding-bottom:36px}
+.entry-footer{text-align:center;padding-top:32px}
+.entry-emergency{display:inline-flex;align-items:center;gap:12px;min-height:48px;padding:7px 24px;border:1.5px solid #ed0b18;border-radius:15px;color:#e7000d;background:#fffdfb;font-size:20px;font-weight:650;text-decoration:none}
+.entry-emergency svg{width:24px;height:24px}
+.entry-footer>p{margin:16px 0 0;font-size:17px;font-style:italic;color:#405c62}
+.entry-waves{position:absolute;z-index:0;bottom:-90px;left:-5%;width:110%;height:160px;background:#eaf6e8;border-radius:50% 55% 0 0;transform:rotate(5deg);opacity:.7;pointer-events:none}
+.entry-waves::after{content:'';position:absolute;inset:-15px -5% 0 38%;border-radius:60% 50% 0 0;background:#e1f3e4;transform:rotate(-16deg)}
+.care-entry button:focus-visible,.care-entry a:focus-visible{outline:3px solid #e6a431;outline-offset:4px}
+.entry-button:hover{background:#e1f3eb}.entry-patient .entry-button:hover{background:#005d50}
+@media(min-width:1500px){.entry-main{padding-top:44px}.entry-intro{margin-bottom:36px}.entry-card{padding-block:28px 24px}.entry-tags{margin-bottom:30px}.entry-footer{padding-top:36px}}
+@media(min-width:768px) and (max-width:1100px){.entry-header-inner{min-height:96px;padding:16px 28px}.entry-main{padding:30px 28px 24px}.entry-grid{gap:16px}.entry-card{padding:22px 16px 18px}.entry-description{font-size:15px}.entry-tags span{font-size:12px;padding-inline:12px}.entry-button{font-size:17px}.entry-admin-details{font-size:15px}.entry-intro>p{font-size:21px}}
+@media(max-width:767px){.entry-header-inner{min-height:88px;padding:14px 16px;gap:8px}.care-entry .brand-lockup{font-size:21px;letter-spacing:-.6px;gap:4px}.care-entry .brand-lockup img{width:44px;height:44px}.care-entry .brand-lockup small{display:none}.entry-language{font-size:12px;gap:4px;padding:2px}.entry-language>span:not(.language-divider){padding:5px 10px}.language-full{display:none}.language-short{display:inline}.entry-language .language-divider{height:16px}.entry-main{max-width:560px;padding:22px 12px 24px}.care-entry .entry-intro h1{font-size:34px;letter-spacing:-1px;line-height:1.3}.entry-intro>p{font-size:16px;margin-top:18px}.entry-intro{margin-bottom:22px}.entry-grid{grid-template-columns:1fr;gap:14px}.entry-card{display:flex;flex-direction:row;align-items:center;text-align:left;gap:22px;padding:14px 16px;border-radius:15px}.entry-icon{width:78px;height:78px;border-radius:19px;margin:0}.entry-icon svg{width:57px;height:57px}.care-entry .entry-card h2{font-size:23px;letter-spacing:-.4px;margin-bottom:0}.entry-description{font-size:14px;line-height:1.4;margin-bottom:10px}.entry-tags,.entry-admin-details{display:none}.entry-button{min-height:38px;font-size:16px;padding:6px 4px;border-radius:9px}.entry-actions{gap:5px}.entry-note{font-size:13px}.entry-register{align-self:flex-start;font-size:14px;min-height:24px}.entry-admin .entry-actions{padding-bottom:0}.entry-footer{padding-top:36px}.entry-emergency{font-size:17px;min-height:44px;border-radius:13px;padding:7px 20px}.entry-emergency svg{width:22px;height:22px}.entry-footer>p{font-size:14px;margin-top:22px}.entry-waves{bottom:-110px;height:150px}}
+@media(max-width:359px){.entry-header-inner{padding-inline:10px}.care-entry .brand-lockup{font-size:18px}.care-entry .brand-lockup img{width:37px;height:37px}.entry-language>span:not(.language-divider){padding-inline:7px}.entry-card{gap:13px;padding:14px 12px}.entry-icon{width:62px;height:68px}.entry-icon svg{width:48px;height:48px}.entry-button{font-size:14px}.care-entry .entry-intro h1{font-size:30px}}
+@media(prefers-reduced-motion:reduce){.care-entry button{transition:none}}

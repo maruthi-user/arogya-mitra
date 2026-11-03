@@ -7,20 +7,28 @@ import org.springframework.stereotype.Repository;
 
 /** Persistence only. The service owns transactions and provider-before-booking lock ordering. */
 @Repository
+@org.springframework.transaction.annotation.Transactional
 public class BookingRepository {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager em;
     private final JdbcTemplate db;
     private final CatalogRepository documents;
     public BookingRepository(JdbcTemplate db,CatalogRepository documents){this.db=db;this.documents=documents;}
     public boolean slotReserved(String provider,String date,String time,long now){
-        return db.queryForObject("SELECT COUNT(*) FROM bookings WHERE pid=? AND booking_date=? AND booking_time=? AND (status='confirmed' OR (status='pending' AND expires_at>?))",Integer.class,provider,date,time,now)>0;
+        int start=java.time.LocalTime.parse(time).toSecondOfDay()/60;
+        for(var r:db.query("SELECT document FROM care_requests WHERE provider_id=? AND request_date=? AND (status IN ('accepted','in_progress') OR (status='pending' AND expires_at>?))",(rs,n)->documents.decode(rs.getString(1)),provider,date,now)){
+            int other=java.time.LocalTime.parse((String)r.get("time")).toSecondOfDay()/60,duration=((Number)r.getOrDefault("durationMinutes",30)).intValue();
+            if(start<other+duration&&other<start+30)return true;
+        }
+        for(String slot:db.query("SELECT booking_time FROM bookings WHERE pid=? AND booking_date=? AND (status='confirmed' OR (status='pending' AND expires_at>?))",(rs,n)->rs.getString(1),provider,date,now)){
+            int other=java.time.LocalTime.parse(slot).toSecondOfDay()/60;if(start<other+30&&other<start+30)return true;
+        }
+        return false;
     }
-    public void insert(Map<String,Object> booking){
-        db.update("INSERT INTO bookings(id,pid,booking_date,booking_time,status,document,expires_at) VALUES(?,?,?,?,?,?,?)",booking.get("id"),booking.get("pid"),booking.get("date"),booking.get("time"),booking.get("status"),documents.encode(booking),booking.get("expiresAt"));
-    }
-    public Optional<String> providerId(String id){return db.query("SELECT pid FROM bookings WHERE id=?",(r,n)->r.getString(1),id).stream().findFirst();}
-    public Optional<Map<String,Object>> lock(String id){return db.query("SELECT document FROM bookings WHERE id=? FOR UPDATE",(r,n)->documents.decode(r.getString(1)),id).stream().findFirst();}
-    public void update(Map<String,Object> booking){db.update("UPDATE bookings SET status=?,document=? WHERE id=?",booking.get("status"),documents.encode(booking),booking.get("id"));}
-    public List<Map<String,Object>> expired(long now){return db.query("SELECT document FROM bookings WHERE status='pending' AND expires_at<=?",(r,n)->documents.decode(r.getString(1)),now);}
-    public void expireIfPending(Map<String,Object> booking,long now){db.update("UPDATE bookings SET status='expired',document=? WHERE id=? AND status='pending' AND expires_at<=?",documents.encode(booking),booking.get("id"),now);}
-    public List<Map<String,Object>> list(){return db.query("SELECT document FROM bookings ORDER BY booking_date,booking_time,id",(r,n)->documents.decode(r.getString(1)));}
+    public void insert(Map<String,Object> booking){var r=new in.arogyamitra.shared.entity.BookingRecord();r.id=(String)booking.get("id");r.providerId=(String)booking.get("pid");r.date=(String)booking.get("date");r.time=(String)booking.get("time");r.status=(String)booking.get("status");r.document=documents.encode(booking);r.expiresAt=((Number)booking.get("expiresAt")).longValue();em.persist(r);em.flush();}
+    public Optional<String> providerId(String id){return em.createQuery("select b.providerId from BookingRecord b where b.id=:id",String.class).setParameter("id",id).getResultStream().findFirst();}
+    public Optional<Map<String,Object>> lock(String id){var r=em.find(in.arogyamitra.shared.entity.BookingRecord.class,id,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);if(r!=null)em.refresh(r,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);return Optional.ofNullable(r).map(record->documents.decode(record.document));}
+    public void update(Map<String,Object> booking){var r=em.find(in.arogyamitra.shared.entity.BookingRecord.class,booking.get("id"));r.status=(String)booking.get("status");r.document=documents.encode(booking);em.flush();}
+    public List<Map<String,Object>> expired(long now){return em.createQuery("select b from BookingRecord b where b.status='pending' and b.expiresAt<=:now",in.arogyamitra.shared.entity.BookingRecord.class).setParameter("now",now).getResultList().stream().map(b->documents.decode(b.document)).toList();}
+    public void expireIfPending(Map<String,Object> booking,long now){em.createQuery("update BookingRecord b set b.status='expired',b.document=:document where b.id=:id and b.status='pending' and b.expiresAt<=:now").setParameter("document",documents.encode(booking)).setParameter("id",booking.get("id")).setParameter("now",now).executeUpdate();}
+    public List<Map<String,Object>> list(){return em.createQuery("select b from BookingRecord b order by b.date,b.time,b.id",in.arogyamitra.shared.entity.BookingRecord.class).getResultList().stream().map(b->documents.decode(b.document)).toList();}
 }

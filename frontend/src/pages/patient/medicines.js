@@ -1,5 +1,7 @@
+import {DataTable} from '../../components/data-display/table.js';
+import {pharmacyRecords} from '../../components/data-display/record-tables.js';
 import { T, LANG, lbl } from '../../i18n/index.js';
-import { MEDICINES } from '../../data/reference-data.js';
+import { MEDICINES } from '../../services/reference-catalog.js';
 import { providerName } from '../../data/provider-names.js';
 
 export function createMedicinesPage(ctx) {
@@ -12,7 +14,7 @@ export function createMedicinesPage(ctx) {
         voice: 'meds',
         html: page(T.whichMedicine, `
           <button class="btn ghost" data-a="go" data-s="medicineRequests">${LANG==='te'?'మీ విచారణలు':'My inquiries'}</button>
-          <div class="grid2">${MEDICINES.map(m => `<button class="tile" data-a="med" data-id="${m.id}"><span class="tile-ico">${m.icon}</span>${lbl(m)}</button>`).join('')}</div>
+          ${DataTable({id:'medicines',caption:T.whichMedicine,rows:MEDICINES,columns:[{key:LANG==='te'?'te':'en',label:LANG==='te'?'మందు':'Medicine',value:m=>lbl(m),render:m=>esc(lbl(m))},{key:'rx',label:LANG==='te'?'ప్రిస్క్రిప్షన్':'Prescription',render:m=>m.rx?T.rxNote:'—'},{label:LANG==='te'?'చర్యలు':'Actions',sortable:false,searchable:false,render:m=>'<button class="btn" data-a="med" data-id="'+esc(m.id)+'">'+(LANG==='te'?'ఫార్మసీలు చూడండి':'Find pharmacies')+'</button>'}]})}
           <button class="btn accent big" data-a="mic">🎤 ${T.speak}</button>`)
       };
     }
@@ -23,14 +25,14 @@ export function createMedicinesPage(ctx) {
       html: page(`${med.icon} ${lbl(med)}`, `
         <h2 class="sub">${T.medicineWhere}</h2>
         ${med.rx ? `<div class="notice">📝 ${T.rxNote}</div>` : ''}
-        ${list.map(s => {
+        ${pharmacyRecords(list,s=>{
           const has = s.stock[med.id] && s.open;
           return `<article class="card">
             <div class="card-head"><strong>${esc(providerName(s))}</strong><span class="badge ${has ? 'ok' : 'bad'}">${has ? T.available : T.notAvailable}</span></div>
             <div class="meta">📍 ${distLabel(distTo(s.village))} · ${esc(villageName(s.village))}${s.delivery ? ' · 🛵 ' + T.homeDelivery : ''}${s.open ? '' : ' · ' + T.closed}</div>
             <div class="actions"><a class="btn green" href="tel:${esc(s.phone)}">📞 ${T.callShop}</a><button class="btn accent" data-a="requestMedicine" data-id="${esc(s.id)}" data-med="${med.id}">${LANG==='te'?'లభ్యతను అడగండి':'Send inquiry'}</button></div>
           </article>`;
-        }).join('')}
+        })}
         <button class="btn ghost" data-a="clearMed">${T.whichMedicine}</button>
         ${!list.length?`<p class="empty-state">${LANG==='te'?'మందుల దుకాణాలు ఇంకా చేర్చబడలేదు.':'No pharmacies have been listed yet.'}</p>`:''}
         <p class="fine">${LANG==='te'?'స్టాక్ మరియు ప్రిస్క్రిప్షన్ అవసరాలను ఫార్మసీతో నిర్ధారించండి.':'Confirm stock and prescription requirements with the pharmacy.'}</p>`)

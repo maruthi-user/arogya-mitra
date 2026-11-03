@@ -1,3 +1,4 @@
+import {appointmentRecords} from '../../components/data-display/record-tables.js';
 import { T, LANG } from '../../i18n/index.js';
 
 import { providerName } from '../../data/provider-names.js';
@@ -16,6 +17,6 @@ return ()=>{
         ${StatCard(l('వేచి ఉన్న అభ్యర్థనలు','Pending requests'),mine().filter(b=>b.status === 'pending').length)}${StatCard(l('పూర్తయినవి','Completed visits'),mine().filter(b=>b.status==='done').length)}${StatCard(l('రాబోయే అపాయింట్‌మెంట్లు','Upcoming visits'),upcoming.length)}</div>
         <button class="row-btn" data-a="toggleOpen">${T.openToday} · ${p.open?T.on:T.off}</button>
         <button class="btn accent" data-a="go" data-s="providerBookings">${T.requests}</button>
-        <div class="section-heading"><h2>${l('రాబోయే సందర్శనలు','Upcoming schedule')}</h2><button class="text-button" data-a="go" data-s="schedule">${l('సమయాలు మార్చండి','Edit schedule')} →</button></div><div class="schedule-list">${upcoming.slice(0,5).map(b=>`<article class="schedule-item"><span class="schedule-time">${esc(b.time)}<small>${esc(b.date)}</small></span>${Avatar(b.name)}<div><strong>${esc(b.name)}</strong><p>${esc(b.reason||l('సంప్రదింపు','Consultation'))}</p></div><span class="status-badge confirmed">Confirmed</span></article>`).join('')||'<p class="empty-state">No confirmed visits yet. Appointment requests appear here after you accept them.</p>'}</div>`)};
+        <div class="section-heading"><h2>${l('రాబోయే సందర్శనలు','Upcoming schedule')}</h2><button class="text-button" data-a="go" data-s="schedule">${l('సమయాలు మార్చండి','Edit schedule')} →</button></div>${appointmentRecords(upcoming,{providerView:true,id:'provider-upcoming'})}`)};
     };
 }

@@ -1,0 +1,11 @@
+﻿import {AuthLayout} from '../../layouts/auth-layout.js';
+import {Input} from '../../components/forms/field.js';
+import {LANG} from '../../i18n/index.js';
+import {escapeHtml as esc} from '../../utils/html.js';
+const l=(te,en)=>LANG==='te'?te:en;
+export function registrationReceipt(S){return {voice:null,html:AuthLayout({title:l('ఆమోదం కోసం వేచి ఉంది','Pending Approval'),description:l('మీ నమోదు నిర్వాహకుని సమీక్షకు పంపబడింది.','Your provider registration has been submitted for admin review.'),body:`<div class="inline-note">${l('ఆమోదం వరకు మీరు ప్రవేశించలేరు. నిర్ణయాన్ని ఇమెయిల్ చేస్తాము. ఆమోదం తర్వాత తాత్కాలిక పాస్‌వర్డ్‌తో ప్రవేశించి దాన్ని మార్చాలి.','You cannot sign in until approved. We will email the decision. After approval, sign in with your temporary password and change it before accessing your dashboard.')}</div><p>${l('యూజర్‌నేమ్','Username')}: <strong>${esc(S.applicationReceipt?.username||'')}</strong></p><button class="btn accent" data-a="chooseRole" data-role="provider">${l('ప్రవేశ పేజీకి','Back to sign in')}</button>`})};}
+export function initialPasswordScreen(){return {voice:null,html:AuthLayout({title:l('తాత్కాలిక పాస్‌వర్డ్ మార్చండి','Change your temporary password'),description:l('డాష్‌బోర్డ్ ఉపయోగించే ముందు కొత్త పాస్‌వర్డ్ ఎంచుకోండి.','Choose a new password before accessing your dashboard.'),body:`<form class="auth-form" data-form-action="changeInitialPassword">
+ ${Input({id:'initialCurrent',type:'password',label:l('తాత్కాలిక పాస్‌వర్డ్','Temporary password'),attrs:{required:true,autocomplete:'current-password'}})}
+ ${Input({id:'initialNew',type:'password',label:l('కొత్త పాస్‌వర్డ్','New password'),attrs:{required:true,minlength:12,autocomplete:'new-password'}})}
+ ${Input({id:'initialConfirm',type:'password',label:l('కొత్త పాస్‌వర్డ్ నిర్ధారించండి','Confirm new password'),attrs:{required:true,minlength:12,autocomplete:'new-password'}})}
+ <p>${l('కనీసం 12 అక్షరాలు, ఒక అక్షరం మరియు ఒక అంకె ఉండాలి.','Use at least 12 characters, including a letter and a number.')}</p><button class="btn accent" type="submit">${l('పాస్‌వర్డ్ మార్చండి','Change password')}</button><button type="button" class="text-button" data-a="logout">${l('నిష్క్రమించండి','Sign out')}</button></form>`})};}

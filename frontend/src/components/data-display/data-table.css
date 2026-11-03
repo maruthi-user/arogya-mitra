@@ -1,0 +1,61 @@
+﻿/* Semantic, shared record tables: workflow HTML and React account adapter. */
+:is(#legacy-root,.am-table-root) .am-data-table{min-width:0;width:100%;margin:16px 0;background:#fff;border:1px solid #dce6e3;border-radius:12px;overflow:hidden;color:#213c3b}
+:is(#legacy-root,.am-table-root) .am-table-toolbar{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;padding:16px;background:#f9fcfa;border-bottom:1px solid #e0e9e5}
+:is(#legacy-root,.am-table-root) .am-table-toolbar form{margin:0;flex:1;min-width:200px}
+:is(#legacy-root,.am-table-root) .am-table-toolbar label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:650;color:#3b5550}
+:is(#legacy-root,.am-table-root) .am-table-toolbar form>div{display:flex;gap:8px;align-items:center}
+:is(#legacy-root,.am-table-root) .am-table-toolbar input,:is(#legacy-root,.am-table-root) .am-table-toolbar select{font:inherit;font-size:14px;min-height:38px;border:1px solid #c6d8ce;border-radius:7px;padding:7px 10px;background:#fff;color:#1f3d35;max-width:100%;min-width:0}
+:is(#legacy-root,.am-table-root) .am-table-toolbar input{flex:1;width:100%}
+:is(#legacy-root,.am-table-root) .am-data-table .btn{min-height:38px;border:1px solid #a4c9bb;border-radius:7px;padding:7px 13px;background:#fff;color:#08604c;font:inherit;font-size:12px;font-weight:650;cursor:pointer;line-height:1.4}
+:is(#legacy-root,.am-table-root) .am-data-table .btn.accent{background:#00785f;color:white;border-color:#00785f}
+:is(#legacy-root,.am-table-root) .am-data-table .btn:disabled{opacity:.4;cursor:not-allowed}
+:is(#legacy-root,.am-table-root) .am-data-table .table-scroll{overflow:auto;width:100%;margin:0;max-width:100%}
+:is(#legacy-root,.am-table-root) .am-data-table .data-table{width:100%;border-collapse:collapse;font-size:13px;border:0;border-radius:0;margin:0;background:#fff}
+:is(#legacy-root,.am-table-root) .am-data-table caption{text-align:left;font-weight:700;font-size:14px;padding:12px 16px;color:#214c40;background:#fff;border-bottom:1px solid #e2ebe7}
+:is(#legacy-root,.am-table-root) .am-data-table th{text-align:left;padding:0;background:#eef7f2;color:#284d41;border-bottom:1px solid #d7e6df;white-space:nowrap;font-size:12px}
+:is(#legacy-root,.am-table-root) .am-data-table th>button{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:44px;text-align:left;font:inherit;font-weight:700;border:0;background:transparent;color:inherit;padding:12px 16px;cursor:pointer}
+:is(#legacy-root,.am-table-root) .am-data-table th:not(:has(button)){padding:12px 16px}
+:is(#legacy-root,.am-table-root) .am-data-table td{padding:13px 16px;border-bottom:1px solid #e8eeea;vertical-align:top;overflow-wrap:anywhere;line-height:1.6;max-width:360px}
+:is(#legacy-root,.am-table-root) .am-data-table tbody tr:last-child td{border-bottom:0}
+:is(#legacy-root,.am-table-root) .am-data-table tbody tr:hover{background:#f6fbf8}
+:is(#legacy-root,.am-table-root) .am-data-table td .actions{display:flex;gap:6px;flex-wrap:wrap}
+:is(#legacy-root,.am-table-root) .am-data-table td p{margin:4px 0}
+:is(#legacy-root,.am-table-root) .am-data-table td:before{display:none}
+:is(#legacy-root,.am-table-root) .am-record-details{min-width:140px}
+:is(#legacy-root,.am-table-root) .am-record-details>summary{color:#007256;cursor:pointer;font-weight:650;font-size:12px}
+:is(#legacy-root,.am-table-root) .am-record-details>.card{margin:10px 0 0;box-shadow:none;min-width:260px}
+:is(#legacy-root,.am-table-root) .am-table-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid #e1ebe5;font-size:12px;color:#547066}
+:is(#legacy-root,.am-table-root) .am-table-footer nav{display:flex;gap:10px;align-items:center}
+:is(#legacy-root,.am-table-root) .am-data-table :is(button,input,select,summary):focus-visible{outline:3px solid #ca9c38;outline-offset:2px}
+:is(#legacy-root,.am-table-root) .am-data-table>.empty-state{border:0;margin:0;border-radius:0}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table,html.dark :is(#legacy-root,.am-table-root) .am-data-table :is(caption,.data-table){background:#162d29;color:#e0efe8}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table :is(th,.am-table-toolbar){background:#1d3d33;color:#d1e8dc}
+@media(max-width:767px){
+ :is(#legacy-root,.am-table-root) .am-data-table .table-scroll{overflow:visible}
+ :is(#legacy-root,.am-table-root) .am-data-table .data-table{display:block}
+ :is(#legacy-root,.am-table-root) .am-data-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ :is(#legacy-root,.am-table-root) .am-data-table tbody{display:block;padding:10px;background:#f5faf7}
+ :is(#legacy-root,.am-table-root) .am-data-table tbody tr{display:block;border:1px solid #d9e7e0;border-radius:9px;background:white;margin-bottom:10px;padding:8px 12px}
+ :is(#legacy-root,.am-table-root) .am-data-table tbody tr:last-child{margin-bottom:0}
+ :is(#legacy-root,.am-table-root) .am-data-table td{display:grid;grid-template-columns:minmax(75px,34%) minmax(0,1fr);gap:10px;padding:9px 0;max-width:none;width:100%;font-size:13px;border-bottom:1px solid #edf2ef!important}
+ :is(#legacy-root,.am-table-root) .am-data-table td:last-child{border-bottom:0!important}
+ :is(#legacy-root,.am-table-root) .am-data-table td::before{display:block;content:attr(data-label);font-size:11px;font-weight:700;color:#5d756a;line-height:1.7}
+ :is(#legacy-root,.am-table-root) .am-record-details{min-width:0}
+ :is(#legacy-root,.am-table-root) .am-record-details>.card{min-width:0;padding:12px}
+ :is(#legacy-root,.am-table-root) .am-table-toolbar{gap:12px;padding:12px;align-items:flex-end}
+ :is(#legacy-root,.am-table-root) .am-table-toolbar form{flex-basis:100%;min-width:0}
+ :is(#legacy-root,.am-table-root) .am-table-toolbar input{font-size:16px}
+ :is(#legacy-root,.am-table-root) .am-table-toolbar label{font-size:11px}
+ :is(#legacy-root,.am-table-root) .am-table-footer{padding:12px;justify-content:center;font-size:11px}
+ :is(#legacy-root,.am-table-root) .am-table-footer nav{width:100%;justify-content:space-between}
+ :is(#legacy-root,.am-table-root) .am-data-table caption{display:block}
+}
+:is(#legacy-root,.am-table-root) .am-table-toolbar .am-table-mobile-sort,:is(#legacy-root,.am-table-root) .am-table-mobile-direction{display:none}
+@media(max-width:767px){:is(#legacy-root,.am-table-root) .am-table-toolbar .am-table-mobile-sort{display:flex;flex:1;min-width:100px}:is(#legacy-root,.am-table-root) .am-table-mobile-direction{display:block}:is(#legacy-root,.am-table-root) .am-data-table thead:focus-within{position:static;width:auto;height:auto;clip-path:none;white-space:normal}}
+@media(max-width:767px){:is(#legacy-root,.am-table-root) .am-data-table td:has(.am-record-details){display:block}:is(#legacy-root,.am-table-root) .am-data-table td:has(.am-record-details)::before{margin-bottom:6px}}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table tbody{background:#102820}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table tbody tr{background:#17372c;color:#e3f1e9}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table :is(td,th){border-color:#355447!important}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table :is(input,select,.btn){background:#23483b;color:#edf8f1;border-color:#426b58}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table :is(label,.am-table-footer){color:#c8e4d5}
+html.dark :is(#legacy-root,.am-table-root) .am-data-table td::before{color:#a9ccba}

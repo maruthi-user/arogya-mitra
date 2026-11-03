@@ -1,5 +1,5 @@
 import { T, lbl } from '../../i18n/index.js';
-import { SYMPTOMS, RED_FLAGS } from '../../data/reference-data.js';
+import { SYMPTOMS, RED_FLAGS } from '../../services/reference-catalog.js';
 
 export function createSymptomsPage(ctx) {
   return function () {

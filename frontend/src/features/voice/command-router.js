@@ -1,4 +1,4 @@
-import { EMERGENCY_KW, RED_FLAGS, MEDICINES, SYMPTOMS } from '../../data/reference-data.js';
+import { EMERGENCY_KW, RED_FLAGS, MEDICINES, SYMPTOMS } from '../../services/reference-catalog.js';
 export function routeVoiceCommand(text, go, onUnknown) {
   function matches(text, words) {
     return words.some(w => /^[\x00-\x7f]+$/.test(w)
@@ -9,6 +9,7 @@ export function routeVoiceCommand(text, go, onUnknown) {
   function handleVoice(text) {
     const t = text.toLowerCase();
     if (matches(t, EMERGENCY_KW) || RED_FLAGS.some(f => matches(t, f.kw))) return go('emergency');
+    if (matches(t, ['home visit', 'ఇంటికి వైద్యుడు', 'lab', 'laboratory', 'పరీక్ష', 'delivery', 'డెలివరీ', 'checkup', 'ఆరోగ్య పరీక్ష', 'hospital', 'ఆసుపత్రి'])) return go('careCatalog');
     const med = MEDICINES.find(m => matches(t, m.kw));
     if (med) return go('meds', { med: med.id });
     const sym = SYMPTOMS.find(s => s.id !== 'other' && matches(t, s.kw));

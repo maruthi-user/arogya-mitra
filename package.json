@@ -12,6 +12,6 @@
     "start:80": "node frontend/scripts/dev-server.cjs 80"
   },
   "engines": {
-    "node": ">=18"
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

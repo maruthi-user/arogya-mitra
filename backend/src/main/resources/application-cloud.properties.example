@@ -1,0 +1,24 @@
+﻿# Example only: copy to application-cloud.properties when preparing a cloud deployment.
+# Activate postgres,cloud and provide secrets through the environment.
+# Never copy local DB/JWT credentials into this file.
+spring.datasource.url=${DB_URL}
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+security.jwt.secret-key=${JWT_SECRET_KEY}
+server.address=${SERVER_ADDRESS:0.0.0.0}
+server.forward-headers-strategy=framework
+server.servlet.session.cookie.secure=true
+app.security.cookie.secure=true
+storage.provider=${STORAGE_PROVIDER:aws}
+aws.s3.bucket-name=${AWS_S3_BUCKET:}
+aws.s3.region=${AWS_S3_REGION:ap-south-1}
+aws.s3.access-key=${AWS_S3_ACCESS_KEY:}
+aws.s3.secret-key=${AWS_S3_SECRET_KEY:}
+do.space.endpoint=${DO_SPACE_ENDPOINT:}
+do.space.region=${DO_SPACE_REGION:}
+do.space.bucket-name=${DO_SPACE_BUCKET:}
+do.space.access-key=${DO_SPACE_ACCESS_KEY:}
+do.space.secret-key=${DO_SPACE_SECRET_KEY:}
+do.space.root-folder=${DO_SPACE_ROOT_FOLDER:documents}
+app.frontend-url=${FRONTEND_URL}
+app.cors-origins=${CORS_ORIGINS}

@@ -17,3 +17,7 @@ Patients have no login but receive server-owned guest sessions. Appointment/inqu
 Frontend pages include landing, patient, provider, auth and admin. Shared UI includes brand/logo, icons, navigation, tables/cards, search, filters, pagination, forms and native review dialogs. Layouts adapt from bottom navigation/cards on phones to side navigation/tables and wider workspaces on desktops.
 
 The supplied image is stored at frontend/public/assets/images/arogya-mitra-logo.png unchanged. Public styles are under frontend/src/styles/application.css. Build output is frontend/dist with API routing configuration; static hosting alone cannot supply server functionality.
+
+## Village and town services
+
+The connected service catalog and request platform adds business applications/documents, service review, home visits, OP, medicines/delivery, lab tests, home check-ups, ambulance assistance, organisation staff and suspension. See [service platform workflows, additive schema and limitations](service-platform.md).

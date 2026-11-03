@@ -13,3 +13,5 @@ backend/data/
 dist/
 .m2/
 .tools/
+
+backend/config/local-jwt.properties

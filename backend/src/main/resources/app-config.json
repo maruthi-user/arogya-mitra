@@ -1,0 +1,35 @@
+{
+  "app": {
+    "name": "Arogya Mitra",
+    "company": "Village and town healthcare"
+  },
+  "modules": {
+    "audit": {
+      "enabled": true
+    },
+    "files": {
+      "enabled": true
+    },
+    "help": {
+      "enabled": true
+    },
+    "email": {
+      "enabled": false
+    },
+    "passwordreset": {
+      "enabled": false
+    }
+  },
+  "roles": {
+    "ADMIN": [
+      "*"
+    ],
+    "PROVIDER": [
+      "files.use",
+      "help.view"
+    ],
+    "USER": []
+  },
+  "labels": {},
+  "dropdowns": {}
+}

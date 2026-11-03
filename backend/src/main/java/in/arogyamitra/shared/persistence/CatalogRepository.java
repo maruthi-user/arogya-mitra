@@ -10,7 +10,9 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Value;
 @Repository
+@org.springframework.transaction.annotation.Transactional
 public class CatalogRepository {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager em;
     private final JdbcTemplate db;
     private final ObjectMapper json;
     @Value("${app.seed-demo:false}") boolean seedDemo;
@@ -43,19 +45,15 @@ public class CatalogRepository {
         catch (Exception e) { throw new IllegalStateException(e); }
     }
     public List<Map<String,Object>> entities(String kind) {
-        return db.query("SELECT document FROM entities WHERE kind=? AND (sample_data=FALSE OR ?=TRUE) ORDER BY id", (r,n) -> decode(r.getString(1)), kind,seedDemo);
+        return em.createQuery("select c from CatalogRecord c where c.kind=:kind and (c.sampleData=false or :demo=true) order by c.id",in.arogyamitra.shared.entity.CatalogRecord.class).setParameter("kind",kind).setParameter("demo",seedDemo).getResultList().stream().map(c->decode(c.document)).toList();
     }
     public Map<String,Object> lockEntity(String id) {
-        var rows = db.query("SELECT document FROM entities WHERE id=? FOR UPDATE", (r,n) -> decode(r.getString(1)), id);
-        if (rows.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found");
-        return rows.get(0);
+        var record=em.find(in.arogyamitra.shared.entity.CatalogRecord.class,id,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        if(record==null)throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Provider not found");em.refresh(record,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);return decode(record.document);
     }
-
-    public Map<String,Object> get(String id, String kind) {
-        var rows=db.query("SELECT document FROM entities WHERE id=? AND kind=? AND (sample_data=FALSE OR ?=TRUE)",(r,n)->decode(r.getString(1)),id,kind,seedDemo);
-        if(rows.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Resource not found");
-        return rows.get(0);
+    public Map<String,Object> get(String id,String kind){
+        var record=em.find(in.arogyamitra.shared.entity.CatalogRecord.class,id);if(record==null||!kind.equals(record.kind)||(record.sampleData&&!seedDemo))throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Resource not found");return decode(record.document);
     }
-    public void save(String id,Map<String,Object> item) {db.update("UPDATE entities SET document=? WHERE id=?",encode(item),id);}
-    public void create(String id,String kind,Map<String,Object> item) {db.update("INSERT INTO entities(id,kind,document) VALUES(?,?,?)",id,kind,encode(item));}
+    public void save(String id,Map<String,Object> item){var record=em.find(in.arogyamitra.shared.entity.CatalogRecord.class,id);record.document=encode(item);em.flush();}
+    public void create(String id,String kind,Map<String,Object> item){var record=new in.arogyamitra.shared.entity.CatalogRecord();record.id=id;record.kind=kind;record.document=encode(item);em.persist(record);em.flush();}
 }

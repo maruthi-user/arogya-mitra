@@ -12,11 +12,12 @@ import static in.arogyamitra.shared.ApiInput.*;
 @RestController
 @RequestMapping("/api/medicine-requests")
 public class MedicineRequestController {
+    private final in.arogyamitra.reference.ReferenceCatalog reference;
     private final JdbcTemplate db;private final AccessService access;private final CatalogRepository store;
-    public MedicineRequestController(JdbcTemplate db,AccessService access,CatalogRepository store){this.db=db;this.access=access;this.store=store;}
+    public MedicineRequestController(JdbcTemplate db,AccessService access,CatalogRepository store,in.arogyamitra.reference.ReferenceCatalog reference){this.reference=reference;this.db=db;this.access=access;this.store=store;}
     @PostMapping @ResponseStatus(HttpStatus.CREATED) public Map<String,Object> create(@RequestBody Map<String,Object> body){
         var user=access.require("patient");String pharmacy=text(body,"pharmacyId"),medicine=text(body,"medicineId");store.get(pharmacy,"pharmacies");
-        if(!Set.of("para","ors","cetirizine","antacid","cough","iron","amox").contains(medicine))throw invalid("Unknown medicine");
+        if(!reference.contains("medicines",medicine))throw invalid("Unknown medicine");
         String message=body.getOrDefault("message","") instanceof String m?m.trim():"";if(message.length()>500)throw invalid("Message is too long");
         String id=UUID.randomUUID().toString();db.update("INSERT INTO service_requests(id,patient_id,pharmacy_id,medicine_id,message,status,created_at) VALUES(?,?,?,?,?,'requested',?)",id,user.subjectId(),pharmacy,medicine,message,System.currentTimeMillis());return Map.of("id",id,"status","requested");
     }
