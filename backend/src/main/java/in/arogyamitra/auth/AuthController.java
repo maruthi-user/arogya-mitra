@@ -19,6 +19,11 @@ import static in.arogyamitra.shared.ApiInput.*;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    @org.springframework.beans.factory.annotation.Autowired private in.arogyamitra.patient.PatientRegistrationService patientRegistration;
+    @PostMapping("/patients/register") public Map<String,Object> registerPatient(@RequestBody Map<String,Object> input,HttpServletRequest request){
+        throttle.check("patient-register:"+request.getRemoteAddr(),10);
+        return patientRegistration.register(input);
+    }
     private final org.springframework.jdbc.core.JdbcTemplate db;private final InitialPasswordService initialPasswords;
     private final AccountRepository accounts;private final PasswordEncoder passwords;private final SecurityContextRepository contexts;private final CsrfTokenRepository csrf;
     private final AccessService access;private final PatientService patients;private final ProviderApplicationService applications;private final ActivationService activation;private final RequestThrottle throttle;
@@ -46,6 +51,7 @@ public class AuthController {
     }
     @PostMapping("/login") public Map<String,Object> login(@RequestBody Map<String,Object> body,HttpServletRequest request,HttpServletResponse response){
         String identifier=text(body,"username").toLowerCase(Locale.ROOT),role=text(body,"role");
+        if(role.equals("patient"))identifier=identifier.trim().replaceFirst("^\\+91","");
         if(!(body.get("password") instanceof String password)||password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length>72)throw invalid("Invalid password");
         throttle.check("login:"+request.getRemoteAddr(),20);
         var row=accounts.login(identifier);

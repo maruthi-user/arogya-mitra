@@ -34,7 +34,7 @@ export function ServiceEditor({s={},business={},admin=false,organisations=[],pra
  const duration=s.durationMinutes||30;
  const durations=[15,20,30,45,60,90,120,180,240,480];if(!durations.includes(duration))durations.push(duration);
  const coverage=s.coverage||[];
- return `<section class="service-editor reference-service-editor"><div class="service-editor-heading"><button type="button" class="service-back" data-a="careClose" aria-label="${l('సేవలకు తిరిగి','Back to services')}">←</button><div><h2>${s.id?l('సేవను సవరించండి','Edit service'):l('సేవను జోడించండి','Add service')}</h2><p>${l('సరైన వివరాల కోసం సేవ రకాన్ని ఎంచుకోండి.','Choose a service type to see the right fields.')}</p></div></div>
+ return `<section class="service-editor reference-service-editor"><div class="service-editor-heading"><div><h2>${s.id?l('సేవను సవరించండి','Edit service'):l('సేవను జోడించండి','Add service')}</h2><p>${l('సరైన వివరాల కోసం సేవ రకాన్ని ఎంచుకోండి.','Choose a service type to see the right fields.')}</p></div></div>
  <nav class="service-stages" aria-label="${l('సేవ నమోదు దశలు','Service setup steps')}">${[l('సేవ వివరాలు','Service details'),l('ప్రాంతం & సమయాలు','Coverage & schedule'),l('సమీక్ష','Review')].map((name,i)=>`<button type="button" data-a="careEditorStep" data-step="${i}" aria-current="${i===0?'step':'false'}"><span>${i+1}</span>${name}</button>`).join('')}</nav>
  <form data-form-action="careEditorSubmit" id="serviceEditorForm" novalidate><div class="service-editor-layout"><div class="panel service-editor-fields">
  <section data-service-step="0"><div class="form-grid service-core-fields">

@@ -13,7 +13,7 @@ const SuccessScreen = ({
   title,
   message,
   note,
-  buttonLabel = "Back to Login",
+  buttonLabel = "Sign in",
   buttonHref = LOGIN_PATH,
   retryPrompt,
   retryLabel = "Try again",

@@ -287,7 +287,7 @@ export default function ManageAccount() {
   const extra = account.extraTabs.find((t) => t.key === activeTab);
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
+    <div className="am-account-workspace space-y-4">
       <Card className="overflow-hidden rounded-3xl border shadow-sm">
         <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center">
           <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 text-2xl font-bold text-white shadow-xl shadow-blue-500/30">

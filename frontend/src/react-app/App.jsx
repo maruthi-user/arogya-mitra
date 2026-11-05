@@ -6,6 +6,7 @@ import {LayoutProvider} from '@layout/shell/LayoutContext';
 import {AppShell} from '@layout/shell/AppShell';
 import {TooltipProvider} from '@layout/ui/tooltip';
 import {Toaster} from '@layout/ui/toaster';
+import {toast} from '@layout/hooks/use-toast';
 import {setUserData,logout} from '@layout/store/authSlice';
 import {apiSlice} from '@layout/store/apiSlice';
 import {startApplication} from '../app/bootstrap.js';
@@ -25,7 +26,7 @@ export class TemplateErrorBoundary extends React.Component {
  render(){
   if(!this.state.failed)return this.props.children;
   const te=typeof document!=='undefined'&&document.documentElement.lang==='te';
-  return <main className="mx-auto max-w-lg p-8" role="alert"><h1 className="text-xl font-semibold">{te?'పేజీ లోడ్ కాలేదు':'This page could not be loaded'}</h1><p className="my-4">{te?'కనెక్షన్‌ను పరిశీలించి పేజీని రిఫ్రెష్ చేయండి.':'Check the connection and refresh the page to try again.'}</p><button className="rounded bg-primary px-4 py-3 text-primary-foreground" onClick={()=>window.location.reload()}>{te?'రిఫ్రెష్ చేయండి':'Refresh page'}</button></main>;
+  return <main className="mx-auto max-w-lg p-8" role="alert"><h1 className="text-xl font-semibold">{te?'పేజీ లోడ్ కాలేదు':'This page could not be loaded'}</h1><p className="my-4">{te?'కనెక్షన్‌ను పరిశీలించి మళ్లీ ప్రయత్నించండి.':'Check the connection and try again.'}</p><button className="rounded bg-primary px-4 py-3 text-primary-foreground" onClick={()=>window.location.reload()}>{te?'మళ్లీ ప్రయత్నించండి':'Retry'}</button></main>;
  }
 }
 export function HealthcareApp(){
@@ -35,6 +36,11 @@ export function HealthcareApp(){
  const [ready,setReady]=useState(false),[retrying,setRetrying]=useState(false),[expiredNotice,setExpiredNotice]=useState(false);
  const sessionExpired=useSelector(s=>s.auth.sessionExpired);
  const initialized=useRef(false),syncingRoute=useRef(false),identity=useRef('');
+ useEffect(()=>{
+  const notify=event=>{event.preventDefault();toast(event.detail);};
+  document.addEventListener('arogya-notification',notify);
+  return ()=>document.removeEventListener('arogya-notification',notify);
+ },[]);
  const locationRef=useRef({path:location,search});locationRef.current={path:location,search};
  useEffect(()=>{
   let mounted=true;initialized.current=false;
@@ -73,19 +79,19 @@ export function HealthcareApp(){
   if(routePath(current.screen,current.params)===routePath(destination.screen,destination.params))return;
   syncingRoute.current=true;bridge.current.go(destination.screen,destination.params);syncingRoute.current=false;
  },[location,search]);
- useEffect(()=>{if(sessionExpired&&bridge.current){setExpiredNotice(bridge.current.state.session.role==='patient'?'guest':'account');bridge.current.expireSession();}},[sessionExpired]);
+ useEffect(()=>{if(sessionExpired&&bridge.current){setExpiredNotice(bridge.current.state.session.role==='patient'&&!bridge.current.state.session.accountId?'guest':'account');bridge.current.expireSession();}},[sessionExpired]);
  async function retry(){setRetrying(true);try{await bridge.current?.reload();}catch{}finally{setRetrying(false);}}
- const te=snapshot.language==='te',login=snapshot.screen==='login';
+ const te=snapshot.language==='te',login=['login','patientRegister'].includes(snapshot.screen);
  const chrome=!PUBLIC_SCREENS.has(snapshot.screen)&&snapshot.session.role!=='anonymous'&&!snapshot.session.mustChangePassword;
  const account=snapshot.screen==='account'&&['provider','admin'].includes(snapshot.session.role);
  return <LayoutProvider><TooltipProvider><AppShell chromeEnabled={chrome} workspaceRole={snapshot.session.role}>
   {!ready&&<p className="p-4 text-center" role="status">{te?'బ్యాకెండ్‌కు కనెక్ట్ అవుతోంది…':'Connecting to the backend…'}</p>}
   {expiredNotice&&!login&&<div className="m-3 rounded border border-amber-300 bg-amber-50 p-4 text-amber-950" role="alert">{expiredNotice==='guest'?(te?'మీ అతిథి సెషన్ గడువు ముగిసింది. కొనసాగడానికి కొత్త అతిథి సెషన్ ప్రారంభించండి. పాత అభ్యర్థనలను ప్రస్తుతం తిరిగి పొందలేరు.':'Your guest session has expired. Start a new guest session to continue. Previous requests cannot currently be recovered.'):(te?'మీ సెషన్ గడువు ముగిసింది. మళ్లీ ప్రవేశించండి.':'Your session has expired. Please sign in again.')}</div>}
   {snapshot.connectionError&&!login&&<div className="m-3 rounded border border-red-300 bg-red-50 p-4 text-red-950" role="alert"><p>{snapshot.connectionError}</p><button className="mt-2 rounded border px-4 py-2" disabled={retrying} onClick={retry}>{retrying?(te?'కనెక్ట్ అవుతోంది…':'Reconnecting…'):(te?'మళ్లీ ప్రయత్నించండి':'Retry connection')}</button></div>}
-  <div className={account||login?'hidden':chrome?'p-3 sm:p-6':''}><LegacyHost/></div>
+  <div className={account||login?'hidden':chrome?'am-workspace-content':''}><LegacyHost/></div>
   <React.Suspense fallback={<p className="p-6" role="status">{te?'లోడ్ అవుతోంది…':'Loading…'}</p>}>
    {account&&<ManageAccount/>}
-   {login&&<HealthcareLogin key={snapshot.params?.role||'provider'} bridge={bridge} role={snapshot.params?.role||'provider'} language={snapshot.language} connectionError={snapshot.connectionError} onRetry={retry} retrying={retrying}/>}
+   {login&&<HealthcareLogin key={snapshot.screen+':'+(snapshot.params?.role||'provider')} bridge={bridge} register={snapshot.screen==='patientRegister'} role={snapshot.screen==='patientRegister'?'patient':snapshot.params?.role||'provider'} language={snapshot.language} connectionError={snapshot.connectionError} onRetry={retry} retrying={retrying}/>}
   </React.Suspense>
  </AppShell><Toaster/></TooltipProvider></LayoutProvider>;
 }

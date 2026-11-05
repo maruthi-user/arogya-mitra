@@ -15,7 +15,7 @@ import static in.arogyamitra.shared.ApiInput.*;
 public class ActivationService {
     private final PlatformAccountBridge bridge;private final JdbcTemplate db;private final NotificationService notifications;private final PasswordEncoder passwords;
     private final SecureRandom random=new SecureRandom();
-    @Value("${app.frontend-url:http://localhost:3000}") String frontend;
+    @Value("${app.frontend-url:http://localhost:3002}") String frontend;
     public ActivationService(JdbcTemplate db,NotificationService notifications,PasswordEncoder passwords,PlatformAccountBridge bridge){this.bridge=bridge;this.db=db;this.notifications=notifications;this.passwords=passwords;}
     private String hash(String token){try{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8)));}catch(Exception e){throw new IllegalStateException(e);}}
     public void issue(String accountId,String email,String instructions){
@@ -29,7 +29,7 @@ public class ActivationService {
         if(!accounts.isEmpty())issue((String)accounts.get(0).get("id"),(String)accounts.get(0).get("email"),"Use this link to set or reset your provider password.");
     }
     @Transactional public void activate(String token,String password){
-        if(password.length()<12||password.getBytes(StandardCharsets.UTF_8).length>72)throw invalid("Use at least 12 characters and at most 72 UTF-8 bytes");
+        if(password.length()<8||password.getBytes(StandardCharsets.UTF_8).length>72)throw invalid("Use at least 8 characters and at most 72 UTF-8 bytes");
         if(token.length()>200)throw invalid("Invalid activation link");
         var rows=db.queryForList("SELECT account_id,expires_at,used FROM activation_tokens WHERE token_hash=? FOR UPDATE",hash(token));
         if(rows.isEmpty()||Boolean.TRUE.equals(rows.get(0).get("used"))||((Number)rows.get(0).get("expires_at")).longValue()<=System.currentTimeMillis())throw invalid("This link is invalid or expired. Request a new password link.");

@@ -3,6 +3,11 @@ let csrfPromise;
 let refreshPromise;
 const timeoutMs=10000;
 const failure=(message,status)=>Object.assign(new Error(message),status===undefined?{}:{status});
+async function nonJsonFailure(response){
+  const body=typeof response.text==='function'?await response.text():'';
+  if(response.status===403&&body.trim()==='Invalid CORS request')return failure('The backend rejected this frontend address. Restart the backend with the current frontend URL and allowed origins.',403);
+  return failure('The API returned a page instead of JSON. Check the frontend proxy and backend port.',response.status);
+}
 function transportError(error){
   if(error.name==='AbortError'||error.name==='TimeoutError')return failure('The request timed out. Check the connection and try again.');
   if(error.name==='TypeError')return failure('Unable to reach the backend. Check that it is running and try again.');
@@ -15,8 +20,8 @@ async function csrfToken(){
       const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeoutMs);
       try{
         const response=await fetch(config.apiBaseUrl+'/auth/csrf',{credentials:'include',signal:controller.signal});
+        if(!response.headers.get('content-type')?.includes('application/json'))throw await nonJsonFailure(response);
         if(!response.ok)throw failure('Unable to establish a secure connection to the backend.',response.status);
-        if(!response.headers.get('content-type')?.includes('application/json'))throw failure('The API returned a page instead of JSON. Check the frontend proxy and backend port.');
         const token=await response.json();if(typeof token.token!=='string'||!token.token||typeof token.headerName!=='string'||!token.headerName)throw failure('The backend did not return a security token. Check the API routing.');return token;
       }catch(error){csrfPromise=null;throw transportError(error);}finally{clearTimeout(timer);}
     })();
@@ -39,8 +44,9 @@ export async function request(path,method='GET',body,retried=false){
     }
     if(response.status===403)csrfPromise=null;
     if(response.status===204&&response.ok)return null;
-    if(!response.headers.get('content-type')?.includes('application/json'))throw failure('The API returned a page instead of JSON. Check the frontend proxy and backend port.',response.ok?undefined:response.status);
+    if(!response.headers.get('content-type')?.includes('application/json'))throw await nonJsonFailure(response);
     const result=await response.json();
+    if(response.status===404&&path==='/auth/patients/register')throw failure('Patient registration is not loaded on the running backend. Restart Arogya Mitra Application.java and try again.',404);
     // A rejected CSRF check never reaches the login controller. Renew the session token
     // and retry login once; permission failures and other mutations are never replayed.
     if(!retried&&path==='/auth/login'&&response.status===403&&result?.code==='CSRF_INVALID')return await request(path,method,body,true);

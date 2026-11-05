@@ -2,7 +2,9 @@ import { AuthLayout } from '../../layouts/auth-layout.js';
 import { Input } from '../../components/forms/field.js';
 import { Button } from '../../components/ui/button.js';
 import { LANG } from '../../i18n/index.js';
+import {patientLogin} from './patient.js';
 export function createLoginPage(){return (params={})=>{
+  if(params.role==='patient')return patientLogin();
   const role=params.role==='admin'?'admin':'provider',l=(te,en)=>LANG==='te'?te:en;
   return {voice:null,html:AuthLayout({role,title:l('తిరిగి స్వాగతం','Welcome back'),description:role==='admin'?l('నిర్వహణ కోసం సురక్షితంగా లాగిన్ అవ్వండి.','Sign in to manage applications and platform operations.'):l('మీ ప్రాక్టీస్‌ను నిర్వహించడానికి లాగిన్ అవ్వండి.','Sign in to your practice. Your patients and schedule, together.'),body:`<form data-form-action="login" data-role="${role}" class="auth-form">
     ${Input({id:'loginUsername',label:role==='provider'?l('ఇమెయిల్ చిరునామా','Email address'):l('యూజర్‌నేమ్ లేదా ఇమెయిల్','Username or email'),attrs:{required:true,autocomplete:'username',maxlength:100}})}

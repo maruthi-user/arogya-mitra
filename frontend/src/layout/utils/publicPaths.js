@@ -10,6 +10,7 @@ export const PUBLIC_PATHS = [
   "/",
   "/auth/login",
   "/auth/register",
+  "/auth/patient-register",
   "/auth/activate-account",
   "/auth/forgot-password",
   "/auth/restore-password",

@@ -1,4 +1,5 @@
 import {DataTable} from '../../components/data-display/table.js';
+import {patientRegistration} from '../../pages/auth/patient.js';
 import {registrationReceipt,initialPasswordScreen} from '../../pages/auth/approval-screens.js';
 import { DataService } from '../../services/data-service.js';
 import { ReviewDialog } from '../../components/feedback/review-dialog.js';
@@ -17,20 +18,21 @@ export function createAccountWorkflows({S,page,go,resetTo,refresh,render,toast,a
   const screens={login:createLoginPage(),register:createRegistrationPage(),activate:createActivationPage(),requestSetup:createRequestSetupPage(),...createAdminPages({S,page,filter})};
   screens.medicineRequests=()=>({voice:null,html:page(LANG==='te'?'మీ మందుల విచారణలు':'Your medicine inquiries',DataTable({id:'patient-medicine-inquiries',caption:LANG==='te'?'మందుల విచారణలు':'Medicine inquiries',rows:S.medicineRequests,columns:[{key:'pharmacyName',label:LANG==='te'?'ఫార్మసీ':'Pharmacy'},{key:'medicineId',label:LANG==='te'?'మందు':'Medicine',searchValue:r=>lbl(MEDICINES.find(m=>m.id===r.medicineId)||{en:r.medicineId,te:r.medicineId}),render:r=>escapeHtml(lbl(MEDICINES.find(m=>m.id===r.medicineId)||{en:r.medicineId,te:r.medicineId}))},{key:'status',label:LANG==='te'?'స్థితి':'Status'},{key:'message',label:LANG==='te'?'వివరాలు':'Details'},{key:'id',label:LANG==='te'?'సూచన':'Reference'}]}))});
   screens.applicationSubmitted=()=>registrationReceipt(S);
+  screens.patientRegister=patientRegistration;
   screens.initialPassword=initialPasswordScreen;
   const actions={
     chooseRole:async d=>{
-      if(d.role==='patient'){applySession(await DataService.guest(LANG));await refresh();resetTo('home');return;}
-      if(!['provider','admin'].includes(d.role))return;
-      if(S.session.role===d.role){S.settings.role=d.role;await refresh();resetTo('careDashboard');}
+      if(!['patient','provider','admin'].includes(d.role))return;
+      if(S.session.role===d.role){S.settings.role=d.role;await refresh();resetTo(d.role==='patient'?'home':'careDashboard');}
       else go('login',{role:d.role});
     },
     login:async()=>{
       const role=document.querySelector('[data-form-action="login"]').dataset.role;
       applySession(await DataService.login({username:value('loginUsername'),password:document.getElementById('loginPassword').value,role}));
-      await refresh();resetTo('careDashboard');
+      await refresh();resetTo(role==='patient'?'home':'careDashboard');
     },
     logout:async()=>{await DataService.logout();applySession({role:'anonymous'});await refresh();resetTo('roles');},
+    registerPatient:async()=>{await DataService.registerPatient({phone:value('patientPhone'),name:value('patientName'),village:value('patientVillage'),password:document.getElementById('patientPassword').value,confirmPassword:document.getElementById('patientConfirm').value,language:LANG});go('login',{role:'patient'});toast(LANG==='te'?'ఖాతా సృష్టించబడింది. ప్రవేశించండి.':'Account created. Sign in with your mobile number.');},
     reviewRegistration:async()=>{
       if(!document.getElementById('regTerms')?.checked)throw new Error(LANG==='te'?'నిబంధనలు మరియు గోప్యతా విధానం అంగీకరించండి.':'Accept the Terms and Privacy Policy.');
       const input={name:value('regName'),email:value('regEmail'),phone:value('regPhone'),termsAccepted:true};

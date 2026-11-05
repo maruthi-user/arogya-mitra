@@ -1,6 +1,6 @@
 ﻿import React,{useState} from 'react';
 import {Link} from 'wouter';
-import {Eye,EyeOff,ArrowLeft} from 'lucide-react';
+import {Eye,EyeOff} from 'lucide-react';
 
 function CareIllustration(){
  return <svg className="provider-login-illustration" viewBox="0 0 320 220" fill="none" aria-hidden="true">
@@ -45,8 +45,8 @@ export default function ProviderSignIn({role='provider',language='en',busy=false
       {!admin&&<div className="provider-login-forgot"><Link href="/auth/password-setup" onClick={guardNavigation} aria-disabled={busy}>{l('పాస్‌వర్డ్ మర్చిపోయారా?','Forgot password?')}</Link></div>}
       <button className="provider-login-submit" type="submit" disabled={busy}>{busy?l('ప్రవేశిస్తోంది…','Signing in…'):l('ప్రవేశించండి','Sign in')}</button>
      </form>
+     <div className="provider-login-back"><Link href="/" onClick={guardNavigation} aria-disabled={busy}>{l('\u0c2a\u0c3e\u0c24\u0c4d\u0c30 \u0c0e\u0c02\u0c2a\u0c3f\u0c15\u0c15\u0c41 \u0c24\u0c3f\u0c30\u0c3f\u0c17\u0c3f \u0c35\u0c46\u0c33\u0c4d\u0c32\u0c02\u0c21\u0c3f','Back to role selection')}</Link></div>
      {admin?<p className="provider-login-register">{l('ఖాతా సహాయం కోసం ప్లాట్‌ఫారమ్ యజమానిని సంప్రదించండి.','For account assistance, contact the platform owner.')}</p>:<p className="provider-login-register">{l('ఆరోగ్య మిత్రకు కొత్తవారా?','New to Arogya Mitra?')} <Link href="/auth/register" onClick={guardNavigation} aria-disabled={busy}>{l('ఖాతాను సృష్టించండి','Create account')}</Link></p>}
-     <div className="provider-login-back"><Link href="/" onClick={guardNavigation} aria-disabled={busy}><ArrowLeft size={18} aria-hidden="true"/>{l('పాత్ర ఎంపికకు తిరిగి','Back to role selection')}</Link></div>
     </div>
    </section>
   </main>

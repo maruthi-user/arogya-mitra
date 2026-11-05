@@ -8,7 +8,7 @@ export default function NotFound() {
       <p className="text-6xl font-bold text-primary">404</p>
       <p className="text-muted-foreground">This page does not exist.</p>
       <Link href={paths.home} className="text-sm font-medium text-primary underline">
-        Back to home
+        Home
       </Link>
     </div>
   );

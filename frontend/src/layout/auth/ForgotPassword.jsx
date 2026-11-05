@@ -93,7 +93,7 @@ const ForgotPassword = () => {
           title="Check your email"
           message={successMessage}
           note={`If an account exists for this ${idLabel}, the link will reach its registered email shortly. Check your spam folder too.`}
-          buttonLabel="Back to Login"
+          buttonLabel="Sign in"
           buttonHref={loginHref}
           retryPrompt="Didn't get the email?"
           retryLabel="Try again"
@@ -179,7 +179,7 @@ const ForgotPassword = () => {
         >
           <Link href={loginHref} className={authLinkClass}>
             <ArrowLeft className="h-[1.1em] w-[1.1em] transition-transform group-hover:-translate-x-1" />
-            Back to Login
+            Sign in
           </Link>
         </div>
       </form>

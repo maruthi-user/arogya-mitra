@@ -21,6 +21,7 @@
     }
   },
   "roles": {
+    "PATIENT": ["help.view"],
     "ADMIN": [
       "*"
     ],

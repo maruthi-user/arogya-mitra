@@ -11,7 +11,7 @@ const ToastViewport = React.forwardRef(({ className, ...props }, ref) => (
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-17 right-4 z-[100] flex w-86 flex-col gap-3",
+      "fixed top-17 right-4 z-[10000] flex w-86 max-w-[calc(100vw-2rem)] flex-col gap-3",
       className
     )}
     {...props}
@@ -53,6 +53,7 @@ Toast.displayName = ToastPrimitives.Root.displayName;
 const ToastClose = React.forwardRef(({ className, ...props }, ref) => (
   <ToastPrimitives.Close
     ref={ref}
+    aria-label="Dismiss notification"
     className={cn(
       "absolute top-2 right-2 p-1 rounded hover:bg-black/10",
       className

@@ -122,7 +122,7 @@ const RestorePassword = () => {
           title="Password Reset"
           message={successMessage}
           note="You can now sign in with your new password."
-          buttonLabel="Back to Login"
+          buttonLabel="Sign in"
         />
       </AuthLayout>
     );
@@ -290,7 +290,7 @@ const RestorePassword = () => {
         <div className="pt-3 text-center">
           <Link href="/auth/login" className={authLinkClass}>
             <ArrowLeft className="h-4 w-4" />
-            Back to Login
+            Sign in
           </Link>
         </div>
       </form>

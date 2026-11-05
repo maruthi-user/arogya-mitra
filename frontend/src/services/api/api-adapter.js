@@ -1,5 +1,6 @@
 import { request } from './http-client.js';
 export const apiAdapter = {
+    registerPatient:input=>request('/auth/patients/register','POST',input),
     businessProfile:id=>request('/onboarding/businesses/'+encodeURIComponent(id)),
     businessSave:(id,input)=>request('/onboarding/businesses/'+encodeURIComponent(id),'PUT',input),
     businessSubmit:id=>request('/onboarding/businesses/'+encodeURIComponent(id)+'/submit','POST',{}),

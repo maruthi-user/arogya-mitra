@@ -1,3 +1,6 @@
+import {installRecordDetails,dismissRecordDetails} from '../components/data-display/record-details.js';
+import {togglePasswordVisibility} from '../components/forms/password-visibility.js';
+import {installTableTooltips,dismissTableTooltips} from '../components/data-display/table-tooltips.js';
 import {setTableScope,resetDataTables,createTableActions} from '../components/data-display/table.js';
 import {createOnboardingWorkflows} from '../features/care/onboarding.js';
 import { resolveScreen, homeScreen } from './access-policy.js';
@@ -22,7 +25,6 @@ import { createVoiceRequestPage } from '../pages/shared/voice-request.js';
 import { createIntroTourPage } from '../pages/shared/intro-tour.js';
 import { createLanguagePage } from '../pages/shared/language.js';
 import { createVillageSetupPage } from '../pages/patient/village-setup.js';
-import { createHomePage } from '../pages/patient/home.js';
 import { createSymptomsPage } from '../pages/patient/symptoms.js';
 import { createProviderSearchPage } from '../pages/patient/provider-search.js';
 import { createBookAppointmentPage } from '../pages/patient/book-appointment.js';
@@ -35,7 +37,7 @@ import { ConfirmDialog } from '../components/feedback/dialog.js';
 import { createAccountWorkflows } from '../features/auth/workflows.js';
 export function startApplication(options = {}) {
   let disposed=false;
-  const subscriptions=[];
+  const subscriptions=[installTableTooltips(document),installRecordDetails(document)];
   function listen(target,event,handler,options){target.addEventListener(event,handler,options);subscriptions.push(()=>target.removeEventListener?.(event,handler,options));}
 
 
@@ -127,7 +129,16 @@ export function startApplication(options = {}) {
     return d + '/' + m + '/' + y;
   }
 
-  function toast(msg) {
+  function toast(msg, options = {}) {
+    // The React workspace owns notification appearance; the standalone host
+    // keeps its text fallback when no bridge is mounted.
+    if (typeof window.CustomEvent === 'function') {
+      const event = new window.CustomEvent('arogya-notification', {
+        cancelable: true,
+        detail: { description: String(msg), variant: options.variant || 'success' },
+      });
+      if (!document.dispatchEvent(event)) return;
+    }
     toastEl.textContent = msg;
     toastEl.hidden = false;
     clearTimeout(toast.t);
@@ -151,7 +162,7 @@ export function startApplication(options = {}) {
 
   function navbar() { return roleUI.navbar(nav.screen); }
 
-  function page(title, body) { if(options.embedded)return '<div class="healthcare-page"><div class="section-heading"><h1>'+esc(title)+'</h1>'+(nav.stack.length?'<button class="btn" data-a="back">'+(T.back||'Back')+'</button>':'')+'</div>'+body+'</div>';return renderPageLayout({ title, body, header: header(title), navigation: navbar(), mode: DataService.mode }); }
+  function page(title, body) { if(options.embedded)return '<div class="healthcare-page"><div class="section-heading"><h1>'+esc(title)+'</h1>'+'</div>'+body+'</div>';return renderPageLayout({ title, body, header: header(title), navigation: navbar(), mode: DataService.mode }); }
   const providerCard = createProviderCard({ distTo, distLabel, villageName, typeBadge });
 
   /* ---------- screens: each returns { html, voice, after } ---------- */
@@ -161,6 +172,8 @@ export function startApplication(options = {}) {
   /* ---------- render ---------- */
 
   function render(speak) {
+    dismissRecordDetails();
+    dismissTableTooltips();
     if(disposed)return;
     const businessType=S.providers.find(p=>p.id===S.settings.providerId)?.businessType;
     const destination=resolveScreen(nav.screen,S.session,businessType);
@@ -242,6 +255,7 @@ export function startApplication(options = {}) {
   /* ---------- actions ---------- */
 
   const actions = {
+    togglePassword:(d,el)=>togglePasswordVisibility(d.target,el),
     toggleLanguage:()=>{setLang(LANG==='te'?'en':'te');S.settings.lang=LANG;Store.save();render(false);},
     openSearch:()=>go('search',{query:''}),
     globalSearch:()=>{nav.params.query=document.getElementById('globalSearch').value;render(false);},
@@ -343,7 +357,7 @@ export function startApplication(options = {}) {
       await fn(el.dataset, el);
     }
     catch (error) {
-      toast(error.message||'Request failed. Please try again.');
+      toast(error.message||'Request failed. Please try again.', { variant: 'destructive' });
       if(error.status===401){applySession({role:'anonymous'});resetTo('roles');}
       if (error.status === 409) { try { await refresh(); render(false); } catch (_) {} }
     } finally { busy = false; app.removeAttribute('aria-busy'); }
@@ -363,6 +377,8 @@ export function startApplication(options = {}) {
 
   Object.assign(actions,createTableActions(render));
   const pageContext = { S,page,header,esc,villageName,medById,providerById,pharmacyById,distTo,distLabel,typeBadge,fmtTime,isoDate,dateLabel,providerCard,finishIntro, get introStep() { return introStep; } };
+  screens.dash=()=>screens.careDashboard();
+  screens.adminHome=()=>screens.careDashboard();
   screens.account=()=>({voice:null,html:''});
   screens.accessDenied=()=>({voice:null,html:page(LANG==='te'?'అనుమతి లేదు':'Access denied','<section class="panel" role="alert"><p>'+(LANG==='te'?'ఈ పేజీకి మీ పాత్రకు అనుమతి లేదు.':'Your role does not have access to this page.')+'</p><button class="btn accent" data-a="home">'+(LANG==='te'?'నా హోమ్':'Go to my home')+'</button></section>')});
   screens.notFound=()=>({voice:null,html:page(LANG==='te'?'పేజీ దొరకలేదు':'Page not found','<section class="panel"><p>'+(LANG==='te'?'ఈ లింక్ అందుబాటులో లేదు.':'This page is unavailable. Check the link or return home.')+'</p><button class="btn accent" data-a="home">'+(LANG==='te'?'హోమ్':'Home')+'</button></section>')});
@@ -370,7 +386,6 @@ export function startApplication(options = {}) {
   screens.intro = createIntroTourPage(pageContext);
   screens.lang = createLanguagePage(pageContext);
   screens.setup = createVillageSetupPage(pageContext);
-  screens.home = createHomePage(pageContext);
   screens.symptoms = createSymptomsPage(pageContext);
   screens.providers = createProviderSearchPage(pageContext);
   screens.book = createBookAppointmentPage(pageContext);
@@ -393,5 +408,5 @@ export function startApplication(options = {}) {
 
   render(false);
   const initialized=refresh().then(()=>render(false)).catch(error=>{S.connectionError=error.message;render(false);});
-  return { state:S,navigation:nav,initialized,go,resetTo,refresh,reload:async()=>{await refresh();render(false);},expireSession:()=>{refreshRevision++;S.activationToken=null;S.applicationReceipt=null;applySession({role:'anonymous'});resetTo('roles');},destroy(){resetDataTables();disposed=true;tourToken++;Voice.stop();clearTimeout(toast.t);for(const unsubscribe of subscriptions)unsubscribe();if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=null;} };
+  return { state:S,navigation:nav,initialized,go,resetTo,refresh,reload:async()=>{await refresh();render(false);},expireSession:()=>{refreshRevision++;S.activationToken=null;S.applicationReceipt=null;applySession({role:'anonymous'});resetTo('roles');},destroy(){dismissRecordDetails();resetDataTables();disposed=true;tourToken++;Voice.stop();clearTimeout(toast.t);for(const unsubscribe of subscriptions)unsubscribe();if('speechSynthesis' in window)speechSynthesis.onvoiceschanged=null;} };
 }

@@ -111,16 +111,28 @@ public class CareService {
         var u=access.require("patient");var initial=service(text(input,"serviceId"));store.lockEntity((String)initial.get("providerId"));var s=service((String)initial.get("id"));
         if(!visible(s)||!Boolean.TRUE.equals(s.get("available")))throw conflict("Service is unavailable");
         var patient=patients.get(u.subjectId());if("Guest".equals(patient.get("name"))||patient.getOrDefault("phone","").toString().isBlank())throw invalid("Save your name and phone in Profile before requesting care");
-        String day=text(input,"date"),time=text(input,"time"),village=text(input,"village"),mode=text(input,"mode");date(day);
+        String day=text(input,"date"),time=text(input,"time"),enteredVillage=text(input,"village").trim(),mode=text(input,"mode");date(day);
+        String village=reference.items("villages").stream().filter(v->List.of("id","en","te").stream().anyMatch(k->enteredVillage.equalsIgnoreCase(Objects.toString(v.get(k),"")))).map(v->v.get("id").toString()).findFirst().orElse(enteredVillage);
+        if(!((List<?>)s.get("coverage")).contains(village))throw invalid("This provider does not serve the entered village. Check the service coverage.");
         if(!Set.of("visit","callback").contains(mode)||!((List<?>)s.get("coverage")).contains(village)||!((List<?>)s.get("slots")).contains(time)||!LocalDateTime.parse(day+"T"+time).isAfter(LocalDateTime.now(ZoneId.of("Asia/Kolkata"))))throw invalid("Invalid location, mode or slot");
         if(!((List<?>)s.getOrDefault("availableDays",List.of(1,2,3,4,5,6,7))).contains(LocalDate.parse(day).getDayOfWeek().getValue()))throw invalid("Service is not scheduled on this day");
         String address=string(input,"address",300,false),details=string(input,"details",500,false);
+        String payment=input.containsKey("paymentPreference")?string(input,"paymentPreference",30,false):"";
+        if(!Set.of("","undecided","cash","online").contains(payment))throw invalid("Invalid payment preference");
+        Double latitude=null,longitude=null;
+        if(input.get("latitude")!=null||input.get("longitude")!=null){
+            if(!(input.get("latitude") instanceof Number lat)||!(input.get("longitude") instanceof Number lon))throw invalid("Invalid current location");
+            latitude=lat.doubleValue();longitude=lon.doubleValue();
+            if(!Double.isFinite(latitude)||!Double.isFinite(longitude)||Math.abs(latitude)>90||Math.abs(longitude)>180)throw invalid("Invalid current location");
+        }
         if(Set.of("home_visit","delivery","checkup","ambulance").contains(s.get("kind"))&&address.length()<5)throw invalid("Enter a pickup or home address");
         if(Set.of("medicine","delivery","lab","ambulance").contains(s.get("kind"))&&details.length()<3)throw invalid("Enter medicine, test or ambulance destination details for provider review");
         expire((String)s.get("providerId"));int duplicate=db.queryForObject("SELECT COUNT(*) FROM care_requests WHERE patient_id=? AND service_id=? AND request_date=? AND request_time=? AND status IN ('pending','accepted','in_progress')",Integer.class,u.subjectId(),s.get("id"),day,time);if(duplicate>0)throw conflict("You already have an open request for this slot");
         if(used(s,day,time)>=((Number)s.get("capacity")).intValue())throw conflict("This slot is full. Choose another time");
         var r=new LinkedHashMap<String,Object>();String id=UUID.randomUUID().toString();long now=System.currentTimeMillis(),start=LocalDateTime.parse(day+"T"+time).atZone(ZoneId.of("Asia/Kolkata")).toInstant().toEpochMilli();
         r.put("id",id);r.put("serviceId",s.get("id"));r.put("providerId",s.get("providerId"));r.put("patientId",u.subjectId());r.put("patientName",patient.get("name"));r.put("phone",patient.get("phone"));r.put("kind",s.get("kind"));r.put("title",s.get("title"));r.put("titleTe",s.get("titleTe"));r.put("organization",s.get("organization"));r.put("resource",s.get("resource"));r.put("practitionerId",s.getOrDefault("practitionerId",""));r.put("practitionerName",s.getOrDefault("practitionerName",""));r.put("durationMinutes",s.getOrDefault("durationMinutes",30));r.put("fee",((Number)s.get("fee")).intValue()+((Number)s.getOrDefault("travelFee",0)).intValue());r.put("travelFee",s.getOrDefault("travelFee",0));r.put("deliveryMode",s.getOrDefault("deliveryMode","onsite"));r.put("feeOnRequest",s.getOrDefault("feeOnRequest",false));r.put("date",day);r.put("time",time);r.put("village",village);r.put("mode",mode);r.put("address",address);r.put("details",details);r.put("status","pending");r.put("createdAt",now);r.put("expiresAt",Math.min(now+1800000,start));r.put("history",new ArrayList<>());history(r,"pending",u.subjectId(),"");
+        r.put("paymentPreference",payment);r.put("paymentStatus","not_collected");
+        if(latitude!=null){r.put("latitude",latitude);r.put("longitude",longitude);}
         db.update("INSERT INTO care_requests(id,service_id,provider_id,patient_id,request_date,request_time,status,expires_at,created_at,document) VALUES(?,?,?,?,?,?,'pending',?,?,?)",id,s.get("id"),s.get("providerId"),u.subjectId(),day,time,r.get("expiresAt"),now,store.encode(r));
         accounts.providerEmail((String)s.get("providerId")).ifPresent(email->notifications.queue(email,"Arogya Mitra service request",s.get("title")+" requested for "+day+" "+time+" (Asia/Kolkata). Sign in to review. Not confirmed until you accept. Pending requests expire within 30 minutes."));return r;
     }

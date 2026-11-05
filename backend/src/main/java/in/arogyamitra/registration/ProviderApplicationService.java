@@ -16,7 +16,7 @@ public class ProviderApplicationService implements org.springframework.boot.Appl
     private final in.arogyamitra.reference.ReferenceCatalog reference;
     private final JdbcTemplate db;private final CatalogRepository store;private final AccountRepository accounts;
     private final org.springframework.security.crypto.password.PasswordEncoder passwords;private final PlatformAccountBridge bridge;private final java.security.SecureRandom random=new java.security.SecureRandom();
-    @org.springframework.beans.factory.annotation.Value("${app.frontend-url:http://localhost:3000}") private String frontend;
+    @org.springframework.beans.factory.annotation.Value("${app.frontend-url:http://localhost:3002}") private String frontend;
     private final ApplicationDocuments documents;private final NotificationService notifications;
     public ProviderApplicationService(JdbcTemplate db,CatalogRepository store,AccountRepository accounts,NotificationService notifications,ApplicationDocuments documents,in.arogyamitra.reference.ReferenceCatalog reference,org.springframework.security.crypto.password.PasswordEncoder passwords,PlatformAccountBridge bridge){this.passwords=passwords;this.bridge=bridge;this.reference=reference;this.documents=documents;this.db=db;this.store=store;this.accounts=accounts;this.notifications=notifications;}
     @Override @Transactional public void run(org.springframework.boot.ApplicationArguments ignored){

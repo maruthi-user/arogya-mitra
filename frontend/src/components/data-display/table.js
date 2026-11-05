@@ -1,7 +1,10 @@
+import {tableToolbar} from './table-toolbar.js';
+import {iconifyTableActions,tableCellContent} from './table-presentation.js';
 ﻿import {escapeHtml as esc} from '../../utils/html.js';
 import {LANG} from '../../i18n/index.js';
 import {EmptyState} from '../feedback/states.js';
-import {queryTable,columnValue} from './table-model.js';
+import {queryTable} from './table-model.js';
+import {columnWidth,tableMinimumWidth} from './column-layout.js';
 const l=(te,en)=>LANG==='te'?te:en;
 let scope='default';const states=new Map();
 const hash=value=>{let h=2166136261;for(const c of String(value))h=Math.imul(h^c.charCodeAt(0),16777619);return (h>>>0).toString(36);};
@@ -12,18 +15,19 @@ const stateFor=id=>{const key=scope+':'+id;if(!states.has(key))states.set(key,{q
 const attrs=id=>`data-table="${esc(id)}"`;
 export function Table({columns=[],rows=[],caption,emptyMessage='No results',id,sort=-1,direction='asc'}){
  if(!rows.length)return EmptyState(emptyMessage);
- return `<div class="table-scroll" role="region" tabindex="0" aria-label="${esc(caption||l('పట్టిక','Table'))}"><table class="data-table"><caption>${esc(caption)}</caption><thead><tr>${columns.map((c,index)=>{
+ if(!columns.some(c=>/^(Details|పూర్తి వివరాలు)$/i.test(c.label)))columns=[...columns,{label:l('పూర్తి వివరాలు','Details'),sortable:false,searchable:false,render:()=>iconifyTableActions(`<button type="button" data-record-view aria-label="${l('పూర్తి వివరాలు','View details')}">${l('పూర్తి వివరాలు','View details')}</button>`)}];
+ return `<div class="table-scroll w-full overflow-x-auto" role="region" tabindex="0" aria-label="${esc(caption||l('పట్టిక','Table'))}"><table style="--am-table-min-width:${tableMinimumWidth(columns)}px" class="data-table w-full table-fixed border-collapse text-left text-sm"><colgroup>${columns.map(c=>`<col style="width:${columnWidth(c)}px">`).join('')}</colgroup><caption>${esc(caption)}</caption><thead><tr>${columns.map((c,index)=>{
   const sortable=Boolean(id)&&c.sortable!==false;
   return `<th scope="col" ${sortable?`aria-sort="${Number(sort)===index?(direction==='asc'?'ascending':'descending'):'none'}"`:''}>${sortable?`<button type="button" data-a="tableSort" ${attrs(id)} data-column="${index}">${esc(c.label)} <span aria-hidden="true">${Number(sort)===index?(direction==='asc'?'↑':'↓'):'↕'}</span></button>`:esc(c.label)}</th>`;
- }).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${columns.map(c=>`<td data-label="${esc(c.label)}">${c.render?c.render(row):esc(columnValue(c,row))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+ }).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${columns.map(c=>`<td data-label="${esc(c.label)}">${tableCellContent(c,row)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 }
 /** Shared controls for all fetched record lists. Render callbacks supply role-specific actions. */
-export function DataTable({id,columns=[],rows=[],caption,emptyMessage='No results',mobileRenderer,showSearch=true,...options}){
+export function DataTable({id,columns=[],rows=[],caption,emptyMessage='No results',showSearch=true,simpleToolbar=true}){
  const tableId=id||caption||'records';const state=stateFor(tableId);
- const safeColumns=columns.map(c=>({...c,...(/^(actions?|review|చర్యలు|సమీక్ష)$/i.test(c.label)?{sortable:false,searchable:false}:{})}));
- const result=queryTable(rows,safeColumns,state);state.page=result.page;
- const searchId=tableSearchInputId(tableId);
- return `<section class="am-data-table" aria-label="${esc(caption||l('వివరాలు','Records'))}"><div class="am-table-toolbar">${showSearch?`<form data-form-action="tableSearch" ${attrs(tableId)}><label for="${searchId}">${l('శోధించండి','Search records')}</label><div><input id="${searchId}" type="search" value="${esc(state.query)}" placeholder="${l('పట్టికలో వెతకండి','Search this table')}" maxlength="200"><button class="btn" type="submit">${l('వెతకండి','Search')}</button></div></form>`: ''}<label>${l('ఒక పేజీకి','Rows per page')}<select data-table-size ${attrs(tableId)}>${[10,25,50,100].map(n=>`<option value="${n}" ${n===state.pageSize?'selected':''}>${n}</option>`).join('')}</select></label><label class="am-table-mobile-sort">${l('క్రమం','Sort by')}<select data-table-sort ${attrs(tableId)}><option value="-1">${l('మూల క్రమం','Default order')}</option>${safeColumns.map((c,i)=>c.sortable===false?'':`<option value="${i}" ${state.sort===i?'selected':''}>${esc(c.label)}</option>`).join('')}</select></label><button class="btn am-table-mobile-direction" type="button" data-a="tableDirection" ${attrs(tableId)} ${state.sort<0?'disabled':''}>${state.direction==='asc'?l('ఆరోహణ','Ascending'):l('అవరోహణ','Descending')}</button><button class="btn" type="button" data-a="tableReset" ${attrs(tableId)}>${l('రీసెట్','Reset')}</button></div>${Table({columns:safeColumns,rows:result.rows,caption,emptyMessage:state.query&&rows.length?l('సరిపోయే వివరాలు లేవు','No matching records'):emptyMessage,id:tableId,sort:state.sort,direction:state.direction})}<div class="am-table-footer"><span role="status">${result.start}–${result.end} / ${result.total} ${l('వివరాలు','records')}</span><nav aria-label="${l('పట్టిక పేజీలు','Table pages')}"><button class="btn" type="button" data-a="tablePage" ${attrs(tableId)} data-page="${result.page-1}" ${result.page===1?'disabled':''}>${l('మునుపటి','Previous')}</button><span>${result.page} / ${result.pageCount}</span><button class="btn" type="button" data-a="tablePage" ${attrs(tableId)} data-page="${result.page+1}" ${result.page===result.pageCount?'disabled':''}>${l('తరువాత','Next')}</button></nav></div></section>`;
+ const safeColumns=columns.map(c=>({...c,...(simpleToolbar?{sortable:false}:{}),...(/^(actions?|review|\u0c1a\u0c30\u0c4d\u0c2f\u0c32\u0c41|\u0c38\u0c2e\u0c40\u0c15\u0c4d\u0c37)$/i.test(c.label)?{sortable:false,searchable:false}:{})}));
+ const result=queryTable(rows,safeColumns,simpleToolbar?{...state,sort:-1}:state);state.page=result.page;
+ const searchId=tableSearchInputId(tableId),toolbar=tableToolbar({tableId,searchId,state,result,columns:safeColumns,showSearch,simpleToolbar});
+ return iconifyTableActions(`<section class="am-data-table ${simpleToolbar?'am-table-simple':''}" aria-label="${esc(caption||l('\u0c35\u0c3f\u0c35\u0c30\u0c3e\u0c32\u0c41','Records'))}">${toolbar.header}${Table({columns:safeColumns,rows:result.rows,caption,emptyMessage:state.query&&rows.length?l('\u0c38\u0c30\u0c3f\u0c2a\u0c4b\u0c2f\u0c47 \u0c35\u0c3f\u0c35\u0c30\u0c3e\u0c32\u0c41 \u0c32\u0c47\u0c35\u0c41','No matching records'):emptyMessage,id:tableId,sort:state.sort,direction:state.direction})}${toolbar.footer}</section>`);
 }
 export function createTableActions(render){return {
  tableSearch:d=>{const s=stateFor(d.table);s.query=document.getElementById(tableSearchInputId(d.table))?.value.slice(0,200)||'';s.page=1;render(false);},

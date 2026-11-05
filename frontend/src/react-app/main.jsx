@@ -9,3 +9,4 @@ import '../styles/scoped-healthcare.css';
 createRoot(document.getElementById('root')).render(<Provider store={store}><TemplateErrorBoundary><HealthcareApp/></TemplateErrorBoundary></Provider>);
 
 import '../components/data-display/data-table.css';
+import '../styles/ui-alignment.css';

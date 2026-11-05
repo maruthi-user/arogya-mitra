@@ -7,7 +7,7 @@ const net = require('net');
 const root = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
 const openBrowser = args.includes('--open');
-const firstPort = Number(args.find(a => /^\d+$/.test(a)) || process.env.PORT || 3000);
+const firstPort = Number(args.find(a => /^\d+$/.test(a)) || process.env.PORT || 3002);
 const maxTries = 20;
 
 const types = {

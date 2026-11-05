@@ -4,7 +4,6 @@ import { createAppointmentCard } from '../features/appointments/components/appoi
 import { createRoleNavigation } from '../components/navigation/role-navigation.js';
 
 import { createRoleSelectionPage } from '../pages/landing/role-selection.js';
-import { createProviderDashboardPage } from '../pages/provider/dashboard.js';
 import { createProviderAppointmentsPage } from '../pages/provider/appointments.js';
 import { createPatientAppointmentsPage } from '../pages/patient/appointments.js';
 import { createProviderDetailsPage } from '../pages/patient/provider-details.js';
@@ -20,7 +19,6 @@ export function createRoleUI({ S, page, esc, providerById, typeBadge, dateLabel,
   const listView={query:'',status:'',sort:'date',page:1};
   const ctx = {S,page,esc,providerById,typeBadge,dateLabel,fmtTime,isoDate,provider,appointment,mine,screens,listView};
   screens.roles = createRoleSelectionPage(ctx);
-  screens.dash = createProviderDashboardPage(ctx);
   screens.providerBookings = createProviderAppointmentsPage(ctx);
   screens.bookings = createPatientAppointmentsPage(ctx);
   screens.providerDetail = createProviderDetailsPage(ctx);

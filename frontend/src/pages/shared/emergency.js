@@ -16,7 +16,6 @@ export function createEmergencyPage(ctx) {
         ${doc ? `<div class="card left">${'<strong>' + esc(providerName(doc)) + '</strong>'} ${typeBadge(doc.type)}
           <div class="meta">📍 ${distLabel(distTo(doc.village))}</div>
           <div class="actions"><a class="btn green" href="tel:${esc(doc.phone)}">📞 ${T.call}</a></div></div>` : ''}
-        <button class="btn ghost" data-a="back">${T.back}</button>
       </main>`
     };
   

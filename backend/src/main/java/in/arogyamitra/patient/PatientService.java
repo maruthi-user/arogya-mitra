@@ -24,7 +24,7 @@ public class PatientService {
     public List<Map<String,Object>> list(){return patients.list();}
     public Map<String,Object> get(String id){return patients.find(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Patient not found"));}
     private void validate(Map<String,Object> body){
-        if(text(body,"name").length()>40 || !reference.contains("villages",text(body,"village"))
+        if(text(body,"name").length()>40 || text(body,"village").length()>40
             || !Set.of("te","en").contains(text(body,"language")))throw invalid("Invalid patient profile");
     }
     @Transactional public Map<String,Object> create(Map<String,Object> body){
