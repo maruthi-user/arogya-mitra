@@ -1,18 +1,31 @@
 package in.arogyamitra.auth;
 
-import java.util.concurrent.*;
+import in.arogyamitra.platform.exception.TooManyRequestsException;
+import in.arogyamitra.platform.security.RateLimiter;
+import java.time.Duration;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Healthcare endpoints' throttle: allows {@code limit} attempts per key in 15 minutes, via the
+ * shared limiter.
+ */
 @Component
 public class RequestThrottle {
-    private record Window(long start,int count){}
-    private final ConcurrentMap<String,Window> attempts=new ConcurrentHashMap<>();
-    public void check(String key,int limit){
-        long now=System.currentTimeMillis();
-        if(attempts.size()>10000)attempts.entrySet().removeIf(e->e.getValue().start<now-900000);
-        var result=attempts.compute(key,(k,v)->v==null||v.start<now-900000?new Window(now,1):new Window(v.start,v.count+1));
-        if(result.count>limit)throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,"Too many attempts. Please try again later.");
+    private static final Duration WINDOW = Duration.ofMinutes(15);
+    private final RateLimiter limiter;
+
+    public RequestThrottle(RateLimiter limiter) {
+        this.limiter = limiter;
+    }
+
+    public void check(String key, int limit) {
+        try {
+            limiter.consume("am:" + key, limit, WINDOW);
+        } catch (TooManyRequestsException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.TOO_MANY_REQUESTS, "Too many attempts. Please try again later.");
+        }
     }
 }

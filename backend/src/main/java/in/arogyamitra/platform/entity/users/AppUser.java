@@ -1,18 +1,7 @@
 package in.arogyamitra.platform.entity.users;
 
-import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import in.arogyamitra.platform.enums.UserStatus;
 import in.arogyamitra.platform.spi.UserRef;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -21,6 +10,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * The one core user. Deliberately small: identity, role key and status. Anything company specific
@@ -66,8 +63,7 @@ public class AppUser implements UserDetails, UserRef {
     @Column(name = "UPDATED_AT")
     private LocalDateTime updatedAt;
 
-    protected AppUser() {
-    }
+    protected AppUser() {}
 
     public AppUser(String username, String email, String passwordHash, String role) {
         this.email = email;

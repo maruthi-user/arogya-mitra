@@ -1,19 +1,19 @@
 package in.arogyamitra.platform.repository.users;
 
+import in.arogyamitra.platform.entity.users.AppUser;
+import in.arogyamitra.platform.enums.UserStatus;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import in.arogyamitra.platform.entity.users.AppUser;
-import in.arogyamitra.platform.enums.UserStatus;
-
-public interface AppUserRepository extends JpaRepository<AppUser, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<AppUser> {
+public interface AppUserRepository
+        extends JpaRepository<AppUser, Long>,
+                org.springframework.data.jpa.repository.JpaSpecificationExecutor<AppUser> {
 
     Optional<AppUser> findByEmailIgnoreCase(String email);
 

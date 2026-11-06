@@ -1,19 +1,5 @@
 package in.arogyamitra.platform.service.users;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import in.arogyamitra.platform.config.AppConfig;
 import in.arogyamitra.platform.entity.users.AppUser;
 import in.arogyamitra.platform.enums.UserStatus;
@@ -25,6 +11,18 @@ import in.arogyamitra.platform.service.auth.SessionService;
 import in.arogyamitra.platform.spi.AuditEvent;
 import in.arogyamitra.platform.spi.UserRef;
 import in.arogyamitra.platform.spi.UserRefResolver;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService implements UserRefResolver {
@@ -35,8 +33,12 @@ public class UserService implements UserRefResolver {
     private final ApplicationEventPublisher events;
     private final SessionService sessions;
 
-    public UserService(AppUserRepository users, PasswordEncoder encoder, AppConfig config,
-            ApplicationEventPublisher events, SessionService sessions) {
+    public UserService(
+            AppUserRepository users,
+            PasswordEncoder encoder,
+            AppConfig config,
+            ApplicationEventPublisher events,
+            SessionService sessions) {
         this.users = users;
         this.encoder = encoder;
         this.config = config;
@@ -44,9 +46,14 @@ public class UserService implements UserRefResolver {
         this.sessions = sessions;
     }
 
-    /** Letters, digits, dot, underscore, dash; 3 to 50 characters. No '@', so a username is never mistaken for an email. */
+    /**
+     * Letters, digits, dot, underscore, dash; 3 to 50 characters. No '@', so a username is never
+     * mistaken for an email.
+     */
     public static final String USERNAME_PATTERN = "[A-Za-z0-9._-]{3,50}";
-    public static final String USERNAME_MESSAGE = "username must be 3-50 characters: letters, digits, '.', '_' or '-'";
+
+    public static final String USERNAME_MESSAGE =
+            "username must be 3-50 characters: letters, digits, '.', '_' or '-'";
 
     @Transactional
     public AppUser create(String username, String email, String role, String rawPassword) {
@@ -71,20 +78,25 @@ public class UserService implements UserRefResolver {
         if (users.existsByEmailIgnoreCase(normalizedEmail)) {
             throw new DuplicateRequestException("A user with this email already exists.");
         }
-        AppUser saved = users.save(new AppUser(normalizedUsername, normalizedEmail, passwordHash, role));
+        AppUser saved =
+                users.save(new AppUser(normalizedUsername, normalizedEmail, passwordHash, role));
         events.publishEvent(AuditEvent.of("User", saved.getId(), "CREATED", Map.of("role", role)));
         return saved;
     }
 
     @Transactional(readOnly = true)
     public Page<AppUser> search(String query, Pageable pageable) {
-        String like = query == null || query.isBlank() ? null : "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
+        String like =
+                query == null || query.isBlank()
+                        ? null
+                        : "%" + query.trim().toLowerCase(Locale.ROOT) + "%";
         return like == null ? users.findAll(pageable) : users.search(like, pageable);
     }
 
     @Transactional(readOnly = true)
     public AppUser get(Long id) {
-        return users.findById(id).orElseThrow(() -> new ResourceNotFoundException("User " + id + " not found."));
+        return users.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User " + id + " not found."));
     }
 
     @Transactional
@@ -92,7 +104,8 @@ public class UserService implements UserRefResolver {
         AppUser user = get(id);
         if (email != null && !email.isBlank()) {
             String normalized = normalize(email);
-            if (!normalized.equalsIgnoreCase(user.getEmail()) && users.existsByEmailIgnoreCase(normalized)) {
+            if (!normalized.equalsIgnoreCase(user.getEmail())
+                    && users.existsByEmailIgnoreCase(normalized)) {
                 throw new DuplicateRequestException("A user with this email already exists.");
             }
             user.setEmail(normalized);
@@ -109,8 +122,12 @@ public class UserService implements UserRefResolver {
             }
             user.setStatus(status);
         }
-        events.publishEvent(AuditEvent.of("User", id, "UPDATED",
-                Map.of("role", user.getRole(), "status", user.getStatus().name())));
+        events.publishEvent(
+                AuditEvent.of(
+                        "User",
+                        id,
+                        "UPDATED",
+                        Map.of("role", user.getRole(), "status", user.getStatus().name())));
         return users.save(user);
     }
 
@@ -122,9 +139,13 @@ public class UserService implements UserRefResolver {
         events.publishEvent(AuditEvent.of("User", id, "UNLOCKED"));
     }
 
-    /** Ends every other session of the user; keepSessionId (the device making the change) stays signed in. */
+    /**
+     * Ends every other session of the user; keepSessionId (the device making the change) stays
+     * signed in.
+     */
     @Transactional
-    public void changePassword(Long id, String currentPassword, String newPassword, String keepSessionId) {
+    public void changePassword(
+            Long id, String currentPassword, String newPassword, String keepSessionId) {
         AppUser user = get(id);
         if (!encoder.matches(currentPassword, user.getPassword())) {
             throw new BadRequestException("Current password is incorrect.");
@@ -138,7 +159,8 @@ public class UserService implements UserRefResolver {
 
     @Transactional(readOnly = true)
     public Optional<AppUser> findActiveByEmail(String email) {
-        return users.findByEmailIgnoreCase(normalize(email)).filter(u -> u.getStatus() == UserStatus.ACTIVE);
+        return users.findByEmailIgnoreCase(normalize(email))
+                .filter(u -> u.getStatus() == UserStatus.ACTIVE);
     }
 
     @Transactional(readOnly = true)
@@ -147,8 +169,8 @@ public class UserService implements UserRefResolver {
     }
 
     /**
-     * Sets a new password without asking for the old one; also clears a lockout and ends every session.
-     * The caller proves identity.
+     * Sets a new password without asking for the old one; also clears a lockout and ends every
+     * session. The caller proves identity.
      */
     @Transactional
     public void resetPassword(Long id, String newPassword) {
@@ -177,7 +199,9 @@ public class UserService implements UserRefResolver {
             return Optional.empty();
         }
         String value = login.trim();
-        return value.contains("@") ? users.findByEmailIgnoreCase(normalize(value)) : users.findByUsernameIgnoreCase(normalizeUsername(value));
+        return value.contains("@")
+                ? users.findByEmailIgnoreCase(normalize(value))
+                : users.findByUsernameIgnoreCase(normalizeUsername(value));
     }
 
     public static String normalizeUsername(String username) {
@@ -199,7 +223,9 @@ public class UserService implements UserRefResolver {
     @Override
     @Transactional(readOnly = true)
     public List<UserRef> findActiveByRole(String role) {
-        return users.findByRoleAndStatus(role, UserStatus.ACTIVE).stream().map(u -> (UserRef) u).toList();
+        return users.findByRoleAndStatus(role, UserStatus.ACTIVE).stream()
+                .map(u -> (UserRef) u)
+                .toList();
     }
 
     @Override

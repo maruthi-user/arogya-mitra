@@ -1,15 +1,13 @@
 package in.arogyamitra.platform.security;
 
 import java.util.Optional;
-
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public final class CurrentUserContext {
 
-    private CurrentUserContext() {
-    }
+    private CurrentUserContext() {}
 
     public static Optional<CurrentUser> get() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

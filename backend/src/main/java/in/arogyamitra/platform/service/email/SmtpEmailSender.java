@@ -1,18 +1,15 @@
 package in.arogyamitra.platform.service.email;
 
+import in.arogyamitra.platform.config.EmailProperties;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.util.StringUtils;
-
-import in.arogyamitra.platform.config.EmailProperties;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 
 /** Sends through Spring's JavaMailSender, configured by the standard spring.mail.* properties. */
 public class SmtpEmailSender implements EmailSender {
@@ -37,7 +34,8 @@ public class SmtpEmailSender implements EmailSender {
     public boolean send(EmailMessage message) {
         try {
             MimeMessage mime = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mime, true, StandardCharsets.UTF_8.name());
+            MimeMessageHelper helper =
+                    new MimeMessageHelper(mime, true, StandardCharsets.UTF_8.name());
             setFrom(helper);
             helper.setTo(message.to().toArray(String[]::new));
             if (message.cc() != null && !message.cc().isEmpty()) {
@@ -50,8 +48,12 @@ public class SmtpEmailSender implements EmailSender {
             return true;
         } catch (Exception e) {
             // One greppable line for "why did this email not arrive".
-            log.error("[EMAIL-FAILURE] type={} to={} error={}: {}", message.type(), String.join(",", message.to()),
-                    e.getClass().getName(), e.getMessage());
+            log.error(
+                    "[EMAIL-FAILURE] type={} to={} error={}: {}",
+                    message.type(),
+                    String.join(",", message.to()),
+                    e.getClass().getName(),
+                    e.getMessage());
             return false;
         }
     }

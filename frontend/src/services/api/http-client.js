@@ -1,16 +1,21 @@
 ﻿import { config } from '../../config/runtime-config.js';
 let csrfPromise;
 let refreshPromise;
-const timeoutMs=10000;
+// Rural 2G/3G connections often need well over 10 seconds for a response, so wait longer before
+// giving up; config.requestTimeoutMs can override it per deployment.
+const timeoutMs=Number(config.requestTimeoutMs)||25000;
 const failure=(message,status)=>Object.assign(new Error(message),status===undefined?{}:{status});
+const telugu=()=>typeof document!=='undefined'&&document.documentElement.lang==='te';
+const offline=()=>typeof navigator!=='undefined'&&navigator.onLine===false;
 async function nonJsonFailure(response){
   const body=typeof response.text==='function'?await response.text():'';
   if(response.status===403&&body.trim()==='Invalid CORS request')return failure('The backend rejected this frontend address. Restart the backend with the current frontend URL and allowed origins.',403);
   return failure('The API returned a page instead of JSON. Check the frontend proxy and backend port.',response.status);
 }
 function transportError(error){
-  if(error.name==='AbortError'||error.name==='TimeoutError')return failure('The request timed out. Check the connection and try again.');
-  if(error.name==='TypeError')return failure('Unable to reach the backend. Check that it is running and try again.');
+  if(offline())return failure(telugu()?'మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. ఇంటర్నెట్ కనెక్షన్ వచ్చిన తర్వాత మళ్లీ ప్రయత్నించండి.':'You are offline. Try again when your internet connection is back.');
+  if(error.name==='AbortError'||error.name==='TimeoutError')return failure(telugu()?'నెట్‌వర్క్ నెమ్మదిగా ఉంది. కొద్దిసేపటి తర్వాత మళ్లీ ప్రయత్నించండి.':'The network is slow and the request timed out. Please try again in a moment.');
+  if(error.name==='TypeError')return failure(telugu()?'సర్వర్‌ను చేరుకోలేకపోయాం. కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.':'Unable to reach the server. Check your connection and try again.');
   if(error.name==='SyntaxError')return failure('The backend returned an invalid response. Please try again.');
   return error;
 }

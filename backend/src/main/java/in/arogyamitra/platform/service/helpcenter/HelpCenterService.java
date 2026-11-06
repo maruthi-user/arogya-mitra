@@ -1,21 +1,20 @@
 package in.arogyamitra.platform.service.helpcenter;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import in.arogyamitra.platform.config.ConditionalOnAppModule;
+import in.arogyamitra.platform.exception.ResourceNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import in.arogyamitra.platform.config.ConditionalOnAppModule;
-import in.arogyamitra.platform.exception.ResourceNotFoundException;
-
 /**
- * Serves help content from one JSON file (app.help.location, default classpath:help/help-center.json),
- * so each company ships its own content with no code change. Read once, then cached.
+ * Serves help content from one JSON file (app.help.location, default
+ * classpath:help/help-center.json), so each company ships its own content with no code change. Read
+ * once, then cached.
  */
 @Service
 @ConditionalOnAppModule("help")
@@ -25,7 +24,8 @@ public class HelpCenterService {
     private final String location;
     private volatile JsonNode cached;
 
-    public HelpCenterService(ObjectMapper mapper,
+    public HelpCenterService(
+            ObjectMapper mapper,
             @Value("${app.help.location:classpath:help/help-center.json}") String location) {
         this.mapper = mapper;
         this.location = location;

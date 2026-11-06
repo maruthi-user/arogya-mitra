@@ -12,11 +12,17 @@ import {apiSlice} from '@layout/store/apiSlice';
 import {startApplication} from '../app/bootstrap.js';
 import {PUBLIC_SCREENS,parseRoute,routePath,homeScreen} from '../app/access-policy.js';
 import {healthcareConfig} from './config';
-const ManageAccount=React.lazy(()=>import('@layout/account/ManageAccount'));
+import {reactPage} from './pages';
 const HealthcareLogin=React.lazy(()=>import('./Login'));
 const LegacyHost=memo(function LegacyHost(){
  return <div id="legacy-root"><div id="app"/><div id="toast" role="status" hidden/><div id="listening" role="status" hidden><div className="mic-pulse">🎤</div><div id="listenText"/><button className="btn" data-a="cancelMic">Cancel / రద్దు</button></div></div>;
 });
+/** True while the browser reports a network connection; updates on online/offline events. */
+function useOnline(){
+ const [online,setOnline]=useState(()=>typeof navigator==='undefined'||navigator.onLine!==false);
+ useEffect(()=>{const up=()=>setOnline(true),down=()=>setOnline(false);window.addEventListener('online',up);window.addEventListener('offline',down);return()=>{window.removeEventListener('online',up);window.removeEventListener('offline',down);};},[]);
+ return online;
+}
 export const bridge={current:null};
 configureLayout(healthcareConfig(bridge));
 
@@ -80,17 +86,20 @@ export function HealthcareApp(){
   syncingRoute.current=true;bridge.current.go(destination.screen,destination.params);syncingRoute.current=false;
  },[location,search]);
  useEffect(()=>{if(sessionExpired&&bridge.current){setExpiredNotice(bridge.current.state.session.role==='patient'&&!bridge.current.state.session.accountId?'guest':'account');bridge.current.expireSession();}},[sessionExpired]);
+ const online=useOnline();
  async function retry(){setRetrying(true);try{await bridge.current?.reload();}catch{}finally{setRetrying(false);}}
  const te=snapshot.language==='te',login=['login','patientRegister'].includes(snapshot.screen);
  const chrome=!PUBLIC_SCREENS.has(snapshot.screen)&&snapshot.session.role!=='anonymous'&&!snapshot.session.mustChangePassword;
- const account=snapshot.screen==='account'&&['provider','admin'].includes(snapshot.session.role);
+ // Migrated screens are React pages (react-app/pages.jsx); the legacy host stays mounted but hidden.
+ const page=reactPage(snapshot,bridge);
  return <LayoutProvider><TooltipProvider><AppShell chromeEnabled={chrome} workspaceRole={snapshot.session.role}>
+  {!online&&<div className="m-3 rounded border border-amber-300 bg-amber-50 p-3 text-amber-950" role="status">{te?'మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. కనెక్షన్ వచ్చిన తర్వాత మార్పులు సేవ్ అవుతాయి — మళ్లీ ప్రయత్నించండి.':'You are offline. Your changes are not saved until the connection is back — please try again then.'}</div>}
   {!ready&&<p className="p-4 text-center" role="status">{te?'బ్యాకెండ్‌కు కనెక్ట్ అవుతోంది…':'Connecting to the backend…'}</p>}
   {expiredNotice&&!login&&<div className="m-3 rounded border border-amber-300 bg-amber-50 p-4 text-amber-950" role="alert">{expiredNotice==='guest'?(te?'మీ అతిథి సెషన్ గడువు ముగిసింది. కొనసాగడానికి కొత్త అతిథి సెషన్ ప్రారంభించండి. పాత అభ్యర్థనలను ప్రస్తుతం తిరిగి పొందలేరు.':'Your guest session has expired. Start a new guest session to continue. Previous requests cannot currently be recovered.'):(te?'మీ సెషన్ గడువు ముగిసింది. మళ్లీ ప్రవేశించండి.':'Your session has expired. Please sign in again.')}</div>}
   {snapshot.connectionError&&!login&&<div className="m-3 rounded border border-red-300 bg-red-50 p-4 text-red-950" role="alert"><p>{snapshot.connectionError}</p><button className="mt-2 rounded border px-4 py-2" disabled={retrying} onClick={retry}>{retrying?(te?'కనెక్ట్ అవుతోంది…':'Reconnecting…'):(te?'మళ్లీ ప్రయత్నించండి':'Retry connection')}</button></div>}
-  <div className={account||login?'hidden':chrome?'am-workspace-content':''}><LegacyHost/></div>
+  <div className={page||login?'hidden':chrome?'am-workspace-content':''}><LegacyHost/></div>
   <React.Suspense fallback={<p className="p-6" role="status">{te?'లోడ్ అవుతోంది…':'Loading…'}</p>}>
-   {account&&<ManageAccount/>}
+   {page}
    {login&&<HealthcareLogin key={snapshot.screen+':'+(snapshot.params?.role||'provider')} bridge={bridge} register={snapshot.screen==='patientRegister'} role={snapshot.screen==='patientRegister'?'patient':snapshot.params?.role||'provider'} language={snapshot.language} connectionError={snapshot.connectionError} onRetry={retry} retrying={retrying}/>}
   </React.Suspense>
  </AppShell><Toaster/></TooltipProvider></LayoutProvider>;

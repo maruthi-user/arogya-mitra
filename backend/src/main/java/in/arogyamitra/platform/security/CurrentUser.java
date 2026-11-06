@@ -1,14 +1,13 @@
 package in.arogyamitra.platform.security;
 
+import in.arogyamitra.platform.spi.UserRef;
 import java.io.Serializable;
-
 import org.springframework.security.core.AuthenticatedPrincipal;
 
-import in.arogyamitra.platform.spi.UserRef;
-
 /**
- * The logged-in person. Built on every request from the JWT plus one lookup of its session row, so the role and
- * status are the current ones from the database. sessionId is null when a test or job acts as a user directly.
+ * The logged-in person. Built on every request from the JWT plus one lookup of its session row, so
+ * the role and status are the current ones from the database. sessionId is null when a test or job
+ * acts as a user directly.
  */
 public final class CurrentUser implements UserRef, AuthenticatedPrincipal, Serializable {
 

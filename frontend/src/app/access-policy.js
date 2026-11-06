@@ -3,17 +3,20 @@ export const PUBLIC_SCREENS=new Set(['roles','login','register','patientRegister
 const open=new Set([...PUBLIC_SCREENS,'emergency','lang','intro','careCatalog','notFound','accessDenied']);
 const patient=new Set(['setup','home','symptoms','providers','book','bookings','confirmed','meds','command','providerDetail','search','medicineRequests','careRequest','careConfirm','patientPractitioners','patientAmbulance','patientHospitals','patientLabs','patientClinics','patientPharmacies']);
 const provider=new Set(['initialPassword','businessProfile','providerNotifications','providerAvailability','dash','providerBookings','schedule','providerProfile']);
-const admin=new Set(['adminPendingProviders','businessReviews','adminHome','adminApplications','adminNotifications','adminPharmacies','adminRequests','adminAudit','careOrgs']);
+const admin=new Set(['adminPendingProviders','businessReviews','adminHome','adminApplications','adminVerifiers','adminNotifications','adminPharmacies','adminRequests','adminAudit','careOrgs']);
+const verifier=new Set(['verifierQueue']);
 const shared=new Set(['careStaffManage','careDashboard','carePending','careManage','careHistory','settings','account']);
 const authPaths={roles:'/',login:'/auth/login',register:'/auth/register',patientRegister:'/auth/patient-register',activate:'/auth/activate',requestSetup:'/auth/password-setup',applicationSubmitted:'/auth/application-submitted',notFound:'/not-found',accessDenied:'/access-denied'};
-export const homeScreen=role=>role==='admin'?'careDashboard':role==='provider'?'careDashboard':role==='patient'?'home':'roles';
+export const homeScreen=role=>role==='admin'?'careDashboard':role==='provider'?'careDashboard':role==='verifier'?'verifierQueue':role==='patient'?'home':'roles';
 export function resolveScreen(screen,session={role:'anonymous'},businessType){
  const role=session.role;
  if(role==='provider'&&session.mustChangePassword)return {screen:'initialPassword',params:{}};
- if(!open.has(screen)&&!patient.has(screen)&&!provider.has(screen)&&!admin.has(screen)&&!shared.has(screen))return {screen:'notFound',params:{}};
- const required=admin.has(screen)?'admin':provider.has(screen)?'provider':patient.has(screen)?'patient':null;
+ if(!open.has(screen)&&!patient.has(screen)&&!provider.has(screen)&&!admin.has(screen)&&!verifier.has(screen)&&!shared.has(screen))return {screen:'notFound',params:{}};
+ const required=admin.has(screen)?'admin':verifier.has(screen)?'verifier':provider.has(screen)?'provider':patient.has(screen)?'patient':null;
  if(required&&role!==required)return role==='anonymous'?{screen:required==='patient'?'roles':'login',params:required==='patient'?{}:{role:required}}:{screen:'accessDenied',params:{}};
- if(['account','careManage','careDashboard','carePending','careStaffManage'].includes(screen)&&!['provider','admin'].includes(role))return {screen:role==='anonymous'?'login':'accessDenied',params:role==='anonymous'?{role:'provider'}:{}};
+ if(role==='verifier'&&screen==='careDashboard')return {screen:'verifierQueue',params:{}};
+ if(screen==='account'&&!['provider','admin','verifier'].includes(role))return {screen:role==='anonymous'?'login':'accessDenied',params:role==='anonymous'?{role:'provider'}:{}};
+ if(['careManage','careDashboard','carePending','careStaffManage'].includes(screen)&&!['provider','admin'].includes(role))return {screen:role==='anonymous'?'login':'accessDenied',params:role==='anonymous'?{role:'provider'}:{}};
  if(['careHistory','settings'].includes(screen)&&role==='anonymous')return {screen:'roles',params:{}};
  if(['admin','provider'].includes(role)&&['careHistory','carePending'].includes(screen))return {screen:'careManage',params:{tab:'requests',...(screen==='carePending'?{status:'pending'}:{})}};
  if(role==='provider'&&screen==='providerAvailability')return {screen:'careManage',params:{}};
@@ -33,6 +36,6 @@ export function parseRoute(pathname,search=''){
  if(!screen)screen=path.startsWith('/app/')?path.slice(5):'notFound';
  const query=new URLSearchParams(search||embeddedSearch||'');const params={};
  for(const key of ['id','pid','med','symptom',...(screen==='careManage'?['tab','status']:[])])if(query.has(key))params[key]=query.get(key);
- if(screen==='login')params.role=['admin','patient'].includes(query.get('role'))?query.get('role'):'provider';
+ if(screen==='login')params.role=['admin','patient','verifier'].includes(query.get('role'))?query.get('role'):'provider';
  return {screen,params};
 }

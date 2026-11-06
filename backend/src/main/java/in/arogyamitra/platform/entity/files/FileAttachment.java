@@ -1,9 +1,5 @@
 package in.arogyamitra.platform.entity.files;
 
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,10 +7,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 /** A stored file attached to any record, identified by (ownerType, ownerId). */
 @Entity
-@Table(name = "FILE_ATTACHMENTS", indexes = @Index(name = "IDX_ATTACH_OWNER", columnList = "OWNER_TYPE, OWNER_ID"))
+@Table(
+        name = "FILE_ATTACHMENTS",
+        indexes = @Index(name = "IDX_ATTACH_OWNER", columnList = "OWNER_TYPE, OWNER_ID"))
 public class FileAttachment {
 
     @Id
@@ -46,11 +46,16 @@ public class FileAttachment {
     @Column(name = "CREATED_AT", updatable = false)
     private LocalDateTime createdAt;
 
-    protected FileAttachment() {
-    }
+    protected FileAttachment() {}
 
-    public FileAttachment(String ownerType, String ownerId, String fileName, String contentType, long sizeBytes,
-            String storageKey, Long uploadedBy) {
+    public FileAttachment(
+            String ownerType,
+            String ownerId,
+            String fileName,
+            String contentType,
+            long sizeBytes,
+            String storageKey,
+            Long uploadedBy) {
         this.ownerType = ownerType;
         this.ownerId = ownerId;
         this.fileName = fileName;

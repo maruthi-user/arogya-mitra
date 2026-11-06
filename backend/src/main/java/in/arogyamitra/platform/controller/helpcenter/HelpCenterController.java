@@ -1,12 +1,11 @@
 package in.arogyamitra.platform.controller.helpcenter;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import in.arogyamitra.platform.config.ConditionalOnAppModule;
 import in.arogyamitra.platform.service.helpcenter.HelpCenterService;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /** Public (see SecurityConfiguration): help content is static and holds nothing private. */
 @RestController

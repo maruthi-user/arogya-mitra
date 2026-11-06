@@ -1,9 +1,5 @@
 package in.arogyamitra.platform.entity.users;
 
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,10 +7,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
-/** A one-time reset link. Only a SHA-256 hash of the token is stored, so a database leak does not leak working links. */
+/**
+ * A one-time reset link. Only a SHA-256 hash of the token is stored, so a database leak does not
+ * leak working links.
+ */
 @Entity
-@Table(name = "PASSWORD_RESET_TOKENS", indexes = @Index(name = "IDX_PRT_USER", columnList = "USER_ID, CREATED_AT"))
+@Table(
+        name = "PASSWORD_RESET_TOKENS",
+        indexes = @Index(name = "IDX_PRT_USER", columnList = "USER_ID, CREATED_AT"))
 public class PasswordResetToken {
 
     @Id
@@ -37,8 +40,7 @@ public class PasswordResetToken {
     @Column(name = "CREATED_AT", updatable = false)
     private LocalDateTime createdAt;
 
-    protected PasswordResetToken() {
-    }
+    protected PasswordResetToken() {}
 
     public PasswordResetToken(Long userId, String tokenHash, LocalDateTime expiresAt) {
         this.userId = userId;

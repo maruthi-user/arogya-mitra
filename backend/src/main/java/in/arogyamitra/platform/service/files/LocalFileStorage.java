@@ -16,7 +16,8 @@ public class LocalFileStorage implements FileStorage {
     }
 
     @Override
-    public void store(String key, InputStream data, long size, String contentType) throws IOException {
+    public void store(String key, InputStream data, long size, String contentType)
+            throws IOException {
         Path target = resolve(key);
         Files.createDirectories(target.getParent());
         Files.copy(data, target, StandardCopyOption.REPLACE_EXISTING);
@@ -36,7 +37,9 @@ public class LocalFileStorage implements FileStorage {
         Files.deleteIfExists(resolve(key));
     }
 
-    /** Keys are generated server-side, but never trust that: refuse anything that escapes the root. */
+    /**
+     * Keys are generated server-side, but never trust that: refuse anything that escapes the root.
+     */
     private Path resolve(String key) {
         Path resolved = root.resolve(key).normalize();
         if (!resolved.startsWith(root)) {

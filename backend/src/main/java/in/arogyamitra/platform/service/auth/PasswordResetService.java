@@ -1,15 +1,5 @@
 package in.arogyamitra.platform.service.auth;
 
-import java.time.LocalDateTime;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import in.arogyamitra.platform.config.AppConfig;
 import in.arogyamitra.platform.config.ConditionalOnAppModule;
 import in.arogyamitra.platform.entity.users.AppUser;
@@ -20,14 +10,22 @@ import in.arogyamitra.platform.security.TokenHashing;
 import in.arogyamitra.platform.service.users.UserService;
 import in.arogyamitra.platform.spi.AuditEvent;
 import in.arogyamitra.platform.spi.NotificationEvent;
-
 import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Forgot / reset password. The request step always looks successful, whether or not the address belongs to an
- * account, so it cannot be used to discover who has one. Tokens are single use, expire, and only their hash is
- * stored. Resetting also clears a lockout, since the person has just proven they own the mailbox, and ends every
- * signed-in session of the account (UserService.resetPassword).
+ * Forgot / reset password. The request step always looks successful, whether or not the address
+ * belongs to an account, so it cannot be used to discover who has one. Tokens are single use,
+ * expire, and only their hash is stored. Resetting also clears a lockout, since the person has just
+ * proven they own the mailbox, and ends every signed-in session of the account
+ * (UserService.resetPassword).
  */
 @Service
 @ConditionalOnAppModule("passwordreset")
@@ -45,7 +43,10 @@ public class PasswordResetService {
     private final long ttlMinutes;
     private final int maxPerHour;
 
-    public PasswordResetService(PasswordResetTokenRepository tokens, UserService users, AppConfig config,
+    public PasswordResetService(
+            PasswordResetTokenRepository tokens,
+            UserService users,
+            AppConfig config,
             ApplicationEventPublisher events,
             @Value("${frontend.url:}") String frontendUrl,
             @Value("${app.password-reset.path:/auth/restore-password?token=}") String resetPath,
@@ -78,7 +79,9 @@ public class PasswordResetService {
         }
         LocalDateTime now = LocalDateTime.now();
         if (tokens.countByUserIdAndCreatedAtAfter(user.getId(), now.minusHours(1)) >= maxPerHour) {
-            log.warn("Password reset for user {} skipped: too many requests in the last hour", user.getId());
+            log.warn(
+                    "Password reset for user {} skipped: too many requests in the last hour",
+                    user.getId());
             return;
         }
         tokens.invalidateOpenTokens(user.getId(), now);
@@ -87,21 +90,32 @@ public class PasswordResetService {
         tokens.save(new PasswordResetToken(user.getId(), hash(raw), now.plusMinutes(ttlMinutes)));
 
         String product = config.app().name();
-        events.publishEvent(NotificationEvent.toAddress(user.getEmail(), "PASSWORD-RESET",
-                "Password reset request for your " + product + " account", "password-reset",
-                Map.of("userName", user.getUsername(),
-                        "passwordResetLink", frontendUrl + resetPath + raw,
-                        "expiryMinutes", ttlMinutes)));
+        events.publishEvent(
+                NotificationEvent.toAddress(
+                        user.getEmail(),
+                        "PASSWORD-RESET",
+                        "Password reset request for your " + product + " account",
+                        "password-reset",
+                        Map.of(
+                                "userName",
+                                user.getUsername(),
+                                "passwordResetLink",
+                                frontendUrl + resetPath + raw,
+                                "expiryMinutes",
+                                ttlMinutes)));
         events.publishEvent(AuditEvent.of("User", user.getId(), "PASSWORD_RESET_REQUESTED"));
     }
 
     @Transactional
     public void reset(String rawToken, String newPassword) {
         LocalDateTime now = LocalDateTime.now();
-        PasswordResetToken token = tokens.findByTokenHash(hash(rawToken == null ? "" : rawToken))
-                .filter(t -> t.isUsable(now))
-                .orElseThrow(() -> new BadRequestException(INVALID));
-        AppUser user = users.findActiveById(token.getUserId()).orElseThrow(() -> new BadRequestException(INVALID));
+        PasswordResetToken token =
+                tokens.findByTokenHash(hash(rawToken == null ? "" : rawToken))
+                        .filter(t -> t.isUsable(now))
+                        .orElseThrow(() -> new BadRequestException(INVALID));
+        AppUser user =
+                users.findActiveById(token.getUserId())
+                        .orElseThrow(() -> new BadRequestException(INVALID));
 
         users.resetPassword(user.getId(), newPassword); // checks the password policy first
         token.markUsed(now);

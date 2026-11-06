@@ -1,5 +1,8 @@
 package in.arogyamitra.platform.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import in.arogyamitra.platform.config.AppConfig.ModuleConfig;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -7,19 +10,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import in.arogyamitra.platform.config.AppConfig.ModuleConfig;
-
 /**
  * Reads and validates app-config.json. Static on purpose: the module toggles are needed while the
- * Spring context is still being assembled (see {@link OnAppModuleCondition}), before any bean exists.
- * A bad file stops startup with every problem listed, instead of failing later on a request.
+ * Spring context is still being assembled (see {@link OnAppModuleCondition}), before any bean
+ * exists. A bad file stops startup with every problem listed, instead of failing later on a
+ * request.
  */
 public final class AppConfigLoader {
 
@@ -28,11 +27,10 @@ public final class AppConfigLoader {
 
     private static final Pattern KEY = Pattern.compile("[A-Za-z][A-Za-z0-9_]*");
 
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final ObjectMapper MAPPER =
+            new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    private AppConfigLoader() {
-    }
+    private AppConfigLoader() {}
 
     public static AppConfig load(Environment env) {
         String location = env.getProperty(LOCATION_PROPERTY, DEFAULT_LOCATION);
@@ -41,7 +39,8 @@ public final class AppConfigLoader {
         try (InputStream in = resource.getInputStream()) {
             parsed = MAPPER.readValue(in, AppConfig.class);
         } catch (IOException e) {
-            throw new IllegalStateException("Cannot read application config '" + location + "': " + e.getMessage(), e);
+            throw new IllegalStateException(
+                    "Cannot read application config '" + location + "': " + e.getMessage(), e);
         }
         AppConfig config = withEnvironmentOverrides(parsed, env);
         validate(config, location);
@@ -65,7 +64,12 @@ public final class AppConfigLoader {
 
         for (String module : config.modules().keySet()) {
             if (!AppConfig.KNOWN_MODULES.contains(module)) {
-                errors.add("modules." + module + ": unknown module (known: " + AppConfig.KNOWN_MODULES + ")");
+                errors.add(
+                        "modules."
+                                + module
+                                + ": unknown module (known: "
+                                + AppConfig.KNOWN_MODULES
+                                + ")");
             }
         }
         if (config.roles().isEmpty()) {
@@ -73,13 +77,19 @@ public final class AppConfigLoader {
         }
         for (var role : config.roles().entrySet()) {
             if (!KEY.matcher(role.getKey()).matches()) {
-                errors.add("roles." + role.getKey() + ": role names are letters, digits and underscore");
+                errors.add(
+                        "roles."
+                                + role.getKey()
+                                + ": role names are letters, digits and underscore");
             }
         }
 
         if (!errors.isEmpty()) {
             throw new IllegalStateException(
-                    "Invalid application config '" + location + "':\n - " + String.join("\n - ", errors));
+                    "Invalid application config '"
+                            + location
+                            + "':\n - "
+                            + String.join("\n - ", errors));
         }
     }
 }

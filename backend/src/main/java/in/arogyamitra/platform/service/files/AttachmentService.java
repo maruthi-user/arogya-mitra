@@ -1,23 +1,5 @@
 package in.arogyamitra.platform.service.files;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UncheckedIOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
 import in.arogyamitra.platform.config.ConditionalOnAppModule;
 import in.arogyamitra.platform.entity.files.FileAttachment;
 import in.arogyamitra.platform.exception.BadRequestException;
@@ -28,6 +10,22 @@ import in.arogyamitra.platform.security.CurrentUserContext;
 import in.arogyamitra.platform.security.PermissionService;
 import in.arogyamitra.platform.spi.AttachmentAccessChecker;
 import in.arogyamitra.platform.spi.AuditEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @ConditionalOnAppModule("files")
@@ -37,8 +35,7 @@ public class AttachmentService {
     private static final Pattern OWNER_ID = Pattern.compile("[A-Za-z0-9_-]{1,60}");
     private static final Pattern EXTENSION = Pattern.compile("\\.[A-Za-z0-9]{1,10}$");
 
-    public record Download(FileAttachment attachment, InputStream content) {
-    }
+    public record Download(FileAttachment attachment, InputStream content) {}
 
     private final FileAttachmentRepository repository;
     private final FileStorage storage;
@@ -48,11 +45,16 @@ public class AttachmentService {
     private final long maxSize;
     private final Set<String> allowedTypes;
 
-    public AttachmentService(FileAttachmentRepository repository, FileStorage storage, PermissionService permissions,
-            ApplicationEventPublisher events, List<AttachmentAccessChecker> checkerBeans,
+    public AttachmentService(
+            FileAttachmentRepository repository,
+            FileStorage storage,
+            PermissionService permissions,
+            ApplicationEventPublisher events,
+            List<AttachmentAccessChecker> checkerBeans,
             @Value("${app.files.max-size-bytes:15728640}") long maxSize,
-            @Value("${app.files.allowed-content-types:application/pdf,image/png,image/jpeg,text/plain}")
-            List<String> allowedTypes) {
+            @Value(
+                            "${app.files.allowed-content-types:application/pdf,image/png,image/jpeg,text/plain}")
+                    List<String> allowedTypes) {
         this.repository = repository;
         this.storage = storage;
         this.permissions = permissions;
@@ -72,7 +74,8 @@ public class AttachmentService {
             throw new BadRequestException("File is empty.");
         }
         if (file.getSize() > maxSize) {
-            throw new BadRequestException("File is larger than " + (maxSize / (1024 * 1024)) + " MB.");
+            throw new BadRequestException(
+                    "File is larger than " + (maxSize / (1024 * 1024)) + " MB.");
         }
         String contentType = file.getContentType();
         if (contentType == null || !allowedTypes.contains(contentType)) {
@@ -80,16 +83,35 @@ public class AttachmentService {
         }
 
         String originalName = cleanFileName(file.getOriginalFilename());
-        String key = ownerType + "/" + ownerId + "/" + UUID.randomUUID() + extensionOf(originalName);
+        String key =
+                ownerType + "/" + ownerId + "/" + UUID.randomUUID() + extensionOf(originalName);
         try (InputStream in = file.getInputStream()) {
             storage.store(key, in, file.getSize(), contentType);
         } catch (IOException e) {
             throw new UncheckedIOException("Could not store the file.", e);
         }
-        FileAttachment saved = repository.save(
-                new FileAttachment(ownerType, ownerId, originalName, contentType, file.getSize(), key, user.getId()));
-        events.publishEvent(AuditEvent.of("Attachment", saved.getId(), "UPLOADED",
-                Map.of("ownerType", ownerType, "ownerId", ownerId, "fileName", originalName)));
+        FileAttachment saved =
+                repository.save(
+                        new FileAttachment(
+                                ownerType,
+                                ownerId,
+                                originalName,
+                                contentType,
+                                file.getSize(),
+                                key,
+                                user.getId()));
+        events.publishEvent(
+                AuditEvent.of(
+                        "Attachment",
+                        saved.getId(),
+                        "UPLOADED",
+                        Map.of(
+                                "ownerType",
+                                ownerType,
+                                "ownerId",
+                                ownerId,
+                                "fileName",
+                                originalName)));
         return saved;
     }
 
@@ -117,7 +139,8 @@ public class AttachmentService {
         CurrentUser user = CurrentUserContext.require();
         boolean uploader = user.getId().equals(attachment.getUploadedBy());
         if (!uploader && !permissions.has(user, "files.manage")) {
-            throw new AccessDeniedException("Only the uploader or a file manager can delete this file.");
+            throw new AccessDeniedException(
+                    "Only the uploader or a file manager can delete this file.");
         }
         repository.delete(attachment);
         try {
@@ -125,16 +148,25 @@ public class AttachmentService {
         } catch (IOException e) {
             throw new UncheckedIOException("Could not delete the stored file.", e);
         }
-        events.publishEvent(AuditEvent.of("Attachment", id, "DELETED",
-                Map.of("ownerType", attachment.getOwnerType(), "ownerId", attachment.getOwnerId())));
+        events.publishEvent(
+                AuditEvent.of(
+                        "Attachment",
+                        id,
+                        "DELETED",
+                        Map.of(
+                                "ownerType",
+                                attachment.getOwnerType(),
+                                "ownerId",
+                                attachment.getOwnerId())));
     }
 
     // ------------------------------------------------------------------ access
 
     private void requireOwnerAccess(String ownerType, String ownerId, CurrentUser user) {
         AttachmentAccessChecker checker = checkers.get(ownerType);
-        boolean allowed = permissions.has(user, "files.manage")
-                || (checker != null && checker.canAccess(ownerId, user));
+        boolean allowed =
+                permissions.has(user, "files.manage")
+                        || (checker != null && checker.canAccess(ownerId, user));
         if (!allowed) {
             throw new AccessDeniedException("You cannot access files of this record.");
         }
@@ -148,8 +180,10 @@ public class AttachmentService {
     }
 
     private FileAttachment require(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Attachment " + id + " not found."));
+        return repository
+                .findById(id)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Attachment " + id + " not found."));
     }
 
     private static void validateOwner(String ownerType, String ownerId) {

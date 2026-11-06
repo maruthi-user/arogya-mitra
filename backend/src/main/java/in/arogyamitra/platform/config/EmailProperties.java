@@ -3,6 +3,8 @@ package in.arogyamitra.platform.config;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
+ *
+ *
  * <pre>
  * app.email.from-address=no-reply@example.com   (required when spring.mail.host is set)
  * app.email.from-name=Example Co
@@ -11,8 +13,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * app.email.logo-url=https://example.com/logo.png
  * app.email.async=true                          (send on a background thread; false = in the calling thread)
  * </pre>
- * SMTP itself is configured with the standard spring.mail.* properties. With no spring.mail.host, emails are
- * logged (recipient and subject only) and not sent.
+ *
+ * SMTP itself is configured with the standard spring.mail.* properties. With no spring.mail.host,
+ * emails are logged (recipient and subject only) and not sent.
  */
 @ConfigurationProperties(prefix = "app.email")
 public class EmailProperties {

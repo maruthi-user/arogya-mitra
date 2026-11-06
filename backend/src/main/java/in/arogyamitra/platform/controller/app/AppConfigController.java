@@ -1,13 +1,11 @@
 package in.arogyamitra.platform.controller.app;
 
+import in.arogyamitra.platform.config.AppConfig;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import in.arogyamitra.platform.config.AppConfig;
 
 /**
  * What the UI needs to build itself: branding, enabled modules, labels, dropdowns and role names.

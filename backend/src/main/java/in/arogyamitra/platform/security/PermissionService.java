@@ -1,11 +1,9 @@
 package in.arogyamitra.platform.security;
 
-import java.util.List;
-
-import org.springframework.stereotype.Component;
-
 import in.arogyamitra.platform.config.AppConfig;
 import in.arogyamitra.platform.spi.UserRef;
+import java.util.List;
+import org.springframework.stereotype.Component;
 
 /**
  * Role to permission check, driven by "roles" in app-config.json. A role may list "*" (everything),

@@ -1,17 +1,16 @@
 package in.arogyamitra.platform.entity.users;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
- * One signed-in device. The access token carries this id ("sid") and is only accepted while the row is active;
- * the refresh token is rotated on every use and only its hash is kept. The previous hash is kept too, so a
- * replayed (stolen) refresh token can be recognised.
+ * One signed-in device. The access token carries this id ("sid") and is only accepted while the row
+ * is active; the refresh token is rotated on every use and only its hash is kept. The previous hash
+ * is kept too, so a replayed (stolen) refresh token can be recognised.
  */
 @Entity
 @Table(name = "USER_SESSIONS")
@@ -58,11 +57,16 @@ public class UserSession {
     @Column(name = "REVOKE_REASON", length = 40)
     private String revokeReason;
 
-    protected UserSession() {
-    }
+    protected UserSession() {}
 
-    public UserSession(Long userId, String refreshTokenHash, String ipAddress, String userAgent, LocalDateTime now,
-            LocalDateTime expiresAt, LocalDateTime absoluteExpiresAt) {
+    public UserSession(
+            Long userId,
+            String refreshTokenHash,
+            String ipAddress,
+            String userAgent,
+            LocalDateTime now,
+            LocalDateTime expiresAt,
+            LocalDateTime absoluteExpiresAt) {
         this.id = UUID.randomUUID().toString();
         this.userId = userId;
         this.refreshTokenHash = refreshTokenHash;
@@ -79,7 +83,12 @@ public class UserSession {
     }
 
     /** Replaces the refresh token; the old hash is remembered for reuse detection. */
-    public void rotate(String newHash, LocalDateTime now, LocalDateTime newExpiresAt, String ip, String agent) {
+    public void rotate(
+            String newHash,
+            LocalDateTime now,
+            LocalDateTime newExpiresAt,
+            String ip,
+            String agent) {
         this.previousTokenHash = this.refreshTokenHash;
         this.refreshTokenHash = newHash;
         this.rotatedAt = now;

@@ -1,14 +1,13 @@
 package in.arogyamitra.platform.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 /**
- * Everything that changes between products, read from app-config.json: which modules are on, labels,
- * roles and their permissions, and dropdown lists. Code never hardcodes these.
+ * Everything that changes between products, read from app-config.json: which modules are on,
+ * labels, roles and their permissions, and dropdown lists. Code never hardcodes these.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record AppConfig(
@@ -19,7 +18,8 @@ public record AppConfig(
         Map<String, List<String>> dropdowns) {
 
     /** Every optional module the template knows. A module not mentioned in the JSON is off. */
-    public static final Set<String> KNOWN_MODULES = Set.of("audit", "files", "help", "email", "passwordreset");
+    public static final Set<String> KNOWN_MODULES =
+            Set.of("audit", "files", "help", "email", "passwordreset");
 
     private static final Set<String> ON_BY_DEFAULT = Set.of();
 
@@ -32,12 +32,10 @@ public record AppConfig(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record AppInfo(String name, String company) {
-    }
+    public record AppInfo(String name, String company) {}
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ModuleConfig(boolean enabled) {
-    }
+    public record ModuleConfig(boolean enabled) {}
 
     // ------------------------------------------------------------------ lookups
 

@@ -1,0 +1,90 @@
+import { LANGS } from './index.js';
+
+const en = {
+  loading: 'Loading…', retry: 'Retry', saving: 'Saving…', cancel: 'Cancel', save: 'Save details',
+  reasonLabel: 'Reason (5–1000 characters)', reasonTooShort: 'Enter a reason of at least 5 characters.',
+  catalog: 'Services near you', service: 'Service', provider: 'Provider', description: 'Description', kind: 'Service type',
+  search: 'Search', all: 'All services', village: 'Village / town', availability: 'Availability', accepting: 'Accepting requests',
+  unavailable: 'Unavailable', sort: 'Sort by', name: 'Name', feeAsc: 'Lowest fee first', feeDesc: 'Highest fee first', clear: 'Clear filters',
+  fee: 'Fee', onRequest: 'Fee on request', travel: 'Travel charge', duration: 'Duration (minutes)', coverage: 'Coverage', times: 'Times',
+  practitioner: 'Practitioner', deliveryMode: 'Delivery mode', days: 'Available weekdays (1=Monday)', phone: 'Mobile number', call: 'Call',
+  bookService: 'Book service', review: 'Review service', bookingDetails: 'Booking details', cancelBooking: 'Cancel booking',
+  noServices: 'No services match your search.', selectService: 'Select a service from its category.',
+  ambulanceNote: 'Operator acceptance does not track or confirm vehicle dispatch. Agree on pickup directly. For an emergency, call 108.',
+  date: 'Date', time: 'Available time', chooseTime: 'Choose time', noSlots: 'No available times for this date.',
+  mode: 'Request type', visit: 'Service booking', callback: 'Callback', address: 'Address / location', location: 'Use current location',
+  locationHelp: 'Enter your address manually or allow current location. Enter your service village separately.',
+  locating: 'Requesting current location permission…', located: 'Location added. Add any address instructions.',
+  locationDenied: 'Location permission was denied or unavailable. Enter your address manually.',
+  details: 'Details (medicine / test / destination)', payment: 'Payment preference (optional)', later: 'Decide later', cash: 'Cash to provider', online: 'Online preferred',
+  paymentNote: 'No payment is collected now. This sends a request to the provider; confirmation requires acceptance.',
+  submitted: 'Request submitted', reference: 'Reference', awaiting: 'Await provider approval; your request is not confirmed yet.',
+  home: 'My bookings', history: 'Service request history', noBookings: 'No bookings yet.', status: 'Status', timeline: 'Status history',
+  guestWarning: 'History belongs to this browser session. After session expiry or clearing cookies, previous requests cannot currently be recovered. Keep your reference number for contacting the provider.',
+  cancelTitle: 'Cancel request', cancelled: 'Request cancelled.', appointment: 'Appointment', reason: 'Reason for visit (optional)',
+  appointmentNote: 'Provider approval required. Requests expire after 30 minutes or at the appointment start.', send: 'Send request',
+  notFound: 'This record is unavailable. Choose another service.',
+  medicines: 'Which medicine?', pharmacies: 'Find pharmacies', inquiries: 'Your medicine inquiries', inquiry: 'Send inquiry', inquirySaved: 'Inquiry saved and assigned to the selected pharmacy.',
+  noPharmacies: 'No pharmacies have been listed yet.', stockNote: 'Confirm stock and prescription requirements with the pharmacy.',
+  medicine: 'Medicine', pharmacy: 'Pharmacy', message: 'Details', noInquiries: 'No medicine inquiries yet.',
+  providers: 'Nearby doctors', type: 'Category', openOnly: 'Open only', recommended: 'Availability, village proximity', distance: 'Village proximity',
+  proximity: 'Results use village proximity, not measured travel distance.', unverified: 'Professional credentials have not been independently verified.',
+  unspecified: 'Services not specified', noProviders: 'No providers match your search.',
+  searchTitle: 'Search care', searchHint: 'Search public provider profiles or medicine names. Private appointments are not included.', noMatches: 'No matches',
+  settings: 'Settings', profile: 'Your details', profileHelp: 'Keep your saved contact details up to date.', saved: 'Profile saved.',
+  roleSelection: 'Return to role selection', continue: 'Continue', command: 'Your request', commandLabel: 'Speak or type your request',
+  commandHint: 'Try: fever, doctor, paracetamol. Voice search currently matches keywords; it does not diagnose conditions.',
+  chooseVillage: 'Choose your village', chooseLanguage: 'Choose your language', confirmStock: 'Availability inquiry',
+  statuses: { pending: 'Awaiting acceptance', accepted: 'Accepted by provider', in_progress: 'In progress', completed: 'Completed', cancelled: 'Cancelled', rejected: 'Declined', expired: 'Expired', confirmed: 'Confirmed', declined: 'Declined', done: 'Completed', no_show: 'No-show', requested: 'Requested', contacted: 'Contacted', resolved: 'Resolved' },
+  guidance: {
+    pending: 'Awaiting provider acceptance. Your request is not confirmed yet.', accepted: 'The provider accepted your service request. Prepare for the listed date and time.',
+    callback: 'Your callback request was accepted. Contact the provider to agree on the next steps.', ambulance: 'The operator accepted the request. Confirm the vehicle and pickup directly; this platform does not track dispatch.',
+    in_progress: 'The provider has started the service.', completed: 'The provider marked this service completed.', rejected: 'Read the reason in the status timeline. You can browse other services.',
+    cancelled: 'This request was cancelled. Any replacement requires a new request.', expired: 'The request expired before acceptance. Check availability before requesting again.'
+  }
+};
+
+const te = {
+  loading: 'లోడ్ అవుతోంది…', retry: 'మళ్లీ ప్రయత్నించండి', saving: 'సేవ్ అవుతోంది…', cancel: 'రద్దు', save: 'వివరాలు సేవ్ చేయండి',
+  reasonLabel: 'కారణం (5–1000 అక్షరాలు)', reasonTooShort: 'కనీసం 5 అక్షరాల కారణం నమోదు చేయండి.',
+  catalog: 'మీ ప్రాంతంలో సేవలు', service: 'సేవ', provider: 'సేవాదారు', description: 'వివరణ', kind: 'సేవ రకం',
+  search: 'వెతకండి', all: 'అన్ని సేవలు', village: 'గ్రామం / పట్టణం', availability: 'అందుబాటు', accepting: 'అభ్యర్థనలు స్వీకరిస్తున్నారు',
+  unavailable: 'ప్రస్తుతం అందుబాటులో లేదు', sort: 'క్రమం', name: 'పేరు', feeAsc: 'తక్కువ రుసుము మొదట', feeDesc: 'ఎక్కువ రుసుము మొదట', clear: 'ఫిల్టర్లు తొలగించండి',
+  fee: 'రుసుము', onRequest: 'రుసుము కోసం సంప్రదించండి', travel: 'ప్రయాణ రుసుము', duration: 'వ్యవధి (నిమిషాలు)', coverage: 'సేవా ప్రాంతాలు', times: 'సమయాలు',
+  practitioner: 'వైద్యుడు', deliveryMode: 'సేవ విధానం', days: 'అందుబాటు రోజులు (1=సోమవారం)', phone: 'మొబైల్ నంబర్', call: 'కాల్ చేయండి',
+  bookService: 'సేవ బుక్ చేయండి', review: 'సేవ నిర్ధారణ', bookingDetails: 'బుకింగ్ వివరాలు', cancelBooking: 'బుకింగ్ రద్దు',
+  noServices: 'సరిపోయే సేవలు లేవు.', selectService: 'వర్గం నుండి సేవను ఎంచుకోండి.',
+  ambulanceNote: 'ఆపరేటర్ అంగీకారం వాహన డిస్పాచ్ నిర్ధారణ కాదు. పికప్ వివరాలను నేరుగా నిర్ధారించండి. అత్యవసర పరిస్థితిలో 108కి కాల్ చేయండి.',
+  date: 'తేదీ', time: 'అందుబాటు సమయం', chooseTime: 'సమయం ఎంచుకోండి', noSlots: 'ఈ తేదీకి సమయాలు అందుబాటులో లేవు.',
+  mode: 'అభ్యర్థన రకం', visit: 'సేవ బుకింగ్', callback: 'తిరిగి కాల్', address: 'చిరునామా / స్థానం', location: 'ప్రస్తుత స్థానం',
+  locationHelp: 'చిరునామాను నమోదు చేయండి లేదా స్థాన అనుమతి ఇవ్వండి. గ్రామాన్ని విడిగా ఎంచుకోండి.',
+  locating: 'ప్రస్తుత స్థాన అనుమతి కోరుతోంది…', located: 'స్థానం జోడించబడింది. చిరునామా సూచనలు జోడించండి.',
+  locationDenied: 'స్థాన అనుమతి లేదు లేదా అందుబాటులో లేదు. చిరునామాను నమోదు చేయండి.',
+  details: 'వివరాలు (మందులు / పరీక్ష / గమ్యం)', payment: 'చెల్లింపు ప్రాధాన్యత (ఐచ్ఛికం)', later: 'తరువాత నిర్ణయిస్తాను', cash: 'సేవాదారుకు నగదు', online: 'ఆన్‌లైన్ ప్రాధాన్యత',
+  paymentNote: 'ఇప్పుడు చెల్లింపు వసూలు చేయబడదు. సేవాదారు అంగీకారం తర్వాత మాత్రమే నిర్ధారణ.',
+  submitted: 'అభ్యర్థన పంపబడింది', reference: 'సూచన సంఖ్య', awaiting: 'సేవాదారు ఆమోదం కోసం వేచి ఉండండి. ఇంకా నిర్ధారణ కాలేదు.',
+  home: 'నా బుకింగ్‌లు', history: 'సేవ అభ్యర్థనల చరిత్ర', noBookings: 'బుకింగ్‌లు లేవు.', status: 'స్థితి', timeline: 'స్థితి చరిత్ర',
+  guestWarning: 'ఈ చరిత్ర ప్రస్తుత బ్రౌజర్ సెషన్‌కు చెందినది. కుకీలు తొలగించినా లేదా సెషన్ ముగిసినా పాత అభ్యర్థనలను ప్రస్తుతం తిరిగి పొందలేరు. సూచన సంఖ్యను భద్రపరచండి.',
+  cancelTitle: 'అభ్యర్థన రద్దు', cancelled: 'అభ్యర్థన రద్దయింది.', appointment: 'అపాయింట్‌మెంట్', reason: 'కారణం (ఐచ్ఛికం)',
+  appointmentNote: 'సేవాదారు ఆమోదం అవసరం. అభ్యర్థన 30 నిమిషాల్లో లేదా అపాయింట్‌మెంట్ సమయానికి ముగుస్తుంది.', send: 'అభ్యర్థన పంపండి',
+  notFound: 'ఈ వివరాలు అందుబాటులో లేవు. మరొక సేవను ఎంచుకోండి.',
+  medicines: 'ఏ మందు కావాలి?', pharmacies: 'ఫార్మసీలు చూడండి', inquiries: 'మీ మందుల విచారణలు', inquiry: 'లభ్యతను అడగండి', inquirySaved: 'విచారణ ఎంచుకున్న ఫార్మసీకి పంపబడింది.',
+  noPharmacies: 'మందుల దుకాణాలు ఇంకా చేర్చబడలేదు.', stockNote: 'స్టాక్ మరియు ప్రిస్క్రిప్షన్ అవసరాలను ఫార్మసీతో నిర్ధారించండి.',
+  medicine: 'మందు', pharmacy: 'ఫార్మసీ', message: 'వివరాలు', noInquiries: 'మందుల విచారణలు లేవు.',
+  providers: 'సమీప వైద్యులు', type: 'రకం', openOnly: 'తెరిచి ఉన్నవి', recommended: 'లభ్యత, గ్రామం', distance: 'గ్రామం ఆధారంగా',
+  proximity: 'గ్రామం ఆధారంగా ఫలితాలు చూపబడతాయి. ప్రయాణ దూరం కాదు.', unverified: 'వృత్తిపరమైన ధృవీకరణ పూర్తి కాలేదు.',
+  unspecified: 'సేవల వివరాలు ఇవ్వలేదు', noProviders: 'సరిపోయే సేవాదారులు లేరు.',
+  searchTitle: 'శోధన', searchHint: 'డాక్టర్ లేదా మందు పేరు టైప్ చేయండి. వ్యక్తిగత బుకింగ్‌లు చూపబడవు.', noMatches: 'ఫలితాలు లేవు',
+  settings: 'సెట్టింగ్‌లు', profile: 'మీ వివరాలు', profileHelp: 'మీ సంప్రదింపు వివరాలను నవీకరించండి.', saved: 'వివరాలు సేవ్ అయ్యాయి.',
+  roleSelection: 'పాత్ర ఎంపికకు తిరిగి వెళ్లండి', continue: 'కొనసాగించు', command: 'మీ అభ్యర్థన', commandLabel: 'చెప్పండి లేదా టైప్ చేయండి',
+  commandHint: 'ఉదాహరణ: జ్వరం, డాక్టర్, పారాసెటమాల్. ఇది వ్యాధి నిర్ధారణ చేయదు.',
+  chooseVillage: 'మీ గ్రామాన్ని ఎంచుకోండి', chooseLanguage: 'మీ భాష ఎంచుకోండి', confirmStock: 'లభ్యత విచారణ',
+  statuses: { pending: 'ఆమోదం కోసం వేచి ఉంది', accepted: 'సేవాదారు అంగీకరించారు', in_progress: 'సేవ జరుగుతోంది', completed: 'పూర్తయింది', cancelled: 'రద్దయింది', rejected: 'తిరస్కరించారు', expired: 'గడువు ముగిసింది', confirmed: 'నిర్ధారించారు', declined: 'తిరస్కరించారు', done: 'పూర్తయింది', no_show: 'హాజరు కాలేదు', requested: 'అభ్యర్థించారు', contacted: 'సంప్రదించారు', resolved: 'పరిష్కరించారు' },
+  guidance: { pending: 'ఇంకా నిర్ధారణ కాలేదు. సేవాదారు అంగీకారం కోసం వేచి ఉండండి.', accepted: 'సేవాదారు అంగీకరించారు. చూపిన తేదీ మరియు సమయానికి సిద్ధంగా ఉండండి.', callback: 'తిరిగి కాల్ అభ్యర్థన అంగీకరించారు. తదుపరి చర్యల కోసం సేవాదారుని సంప్రదించండి.', ambulance: 'ఆపరేటర్ అభ్యర్థనను అంగీకరించారు. వాహనం మరియు పికప్ వివరాలను నేరుగా నిర్ధారించండి.', in_progress: 'సేవ ప్రారంభమైంది.', completed: 'సేవ పూర్తయినట్లు సేవాదారు నమోదు చేశారు.', rejected: 'కారణాన్ని స్థితి చరిత్రలో చూడండి. మరో సేవను వెతకవచ్చు.', cancelled: 'ఈ అభ్యర్థన రద్దయింది. కొత్త అభ్యర్థన విడిగా పంపాలి.', expired: 'ఆమోదానికి ముందే గడువు ముగిసింది. కొత్త సమయం ఎంచుకోండి.' }
+};
+
+export const patientText = language => ({ ...LANGS[language === 'te' ? 'te' : 'en'].strings, ...(language === 'te' ? te : en) });
+export const named = (item, language) => item ? item[language] || item.en || item.te || item.id : '';
+export const serviceTitle = (service, language) => language === 'te' ? service.titleTe || service.title : service.title;
+export const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+export const tomorrow = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + 86400000));

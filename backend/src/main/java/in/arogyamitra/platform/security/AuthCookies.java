@@ -1,10 +1,14 @@
 package in.arogyamitra.platform.security;
 
+import in.arogyamitra.platform.service.auth.SessionService.IssuedTokens;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Locale;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,19 +16,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
-import in.arogyamitra.platform.service.auth.SessionService.IssuedTokens;
-
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 /**
- * The two httpOnly cookies that carry the tokens, so page scripts (and any XSS) can never read them:
- * ACCESS_TOKEN goes with every API call, REFRESH_TOKEN only to the auth endpoints (refresh-path).
- * Unsafe requests that carry them must also send the XSRF-TOKEN cookie back as the X-XSRF-TOKEN header.
- * With the frontend and the API on two subdomains (hrms.fpc.com + api-hrms.fpc.com), domain must be their shared
- * parent (fpc.com), or the frontend cannot read XSRF-TOKEN.
+ * The two httpOnly cookies that carry the tokens, so page scripts (and any XSS) can never read
+ * them: ACCESS_TOKEN goes with every API call, REFRESH_TOKEN only to the auth endpoints
+ * (refresh-path). Unsafe requests that carry them must also send the XSRF-TOKEN cookie back as the
+ * X-XSRF-TOKEN header. With the frontend and the API on two subdomains (hrms.fpc.com +
+ * api-hrms.fpc.com), domain must be their shared parent (fpc.com), or the frontend cannot read
+ * XSRF-TOKEN.
  */
 @Component
 public class AuthCookies {
@@ -41,7 +39,8 @@ public class AuthCookies {
     private final String appUrl;
     private final String frontendUrl;
 
-    public AuthCookies(@Value("${app.security.cookie.secure:true}") boolean secure,
+    public AuthCookies(
+            @Value("${app.security.cookie.secure:true}") boolean secure,
             @Value("${app.security.cookie.same-site:Strict}") String sameSite,
             @Value("${app.security.cookie.domain:}") String domain,
             @Value("${app.security.cookie.refresh-path:/api/v1/auth}") String refreshPath,
@@ -64,12 +63,18 @@ public class AuthCookies {
             return;
         }
         if (domain.isEmpty()) {
-            log.warn("Frontend ({}) and API ({}) are on different hosts but app.security.cookie.domain is empty: "
-                    + "the frontend cannot read XSRF-TOKEN and every save will fail with 403. "
-                    + "Set COOKIE_DOMAIN to their shared parent domain.", frontend, api);
+            log.warn(
+                    "Frontend ({}) and API ({}) are on different hosts but app.security.cookie.domain is empty: "
+                            + "the frontend cannot read XSRF-TOKEN and every save will fail with 403. "
+                            + "Set COOKIE_DOMAIN to their shared parent domain.",
+                    frontend,
+                    api);
         } else if (!covers(domain, api) || !covers(domain, frontend)) {
-            log.warn("app.security.cookie.domain={} does not cover both the frontend ({}) and the API ({}).",
-                    domain, frontend, api);
+            log.warn(
+                    "app.security.cookie.domain={} does not cover both the frontend ({}) and the API ({}).",
+                    domain,
+                    frontend,
+                    api);
         }
     }
 
@@ -89,7 +94,12 @@ public class AuthCookies {
 
     /** Sets the access cookie, and the refresh cookie when a new refresh token was issued. */
     public void write(HttpServletResponse response, IssuedTokens tokens) {
-        add(response, ACCESS, tokens.accessToken(), "/", Duration.ofMillis(tokens.accessExpiresInMs()));
+        add(
+                response,
+                ACCESS,
+                tokens.accessToken(),
+                "/",
+                Duration.ofMillis(tokens.accessExpiresInMs()));
         if (tokens.refreshToken() != null) {
             Duration untilExpiry = Duration.between(LocalDateTime.now(), tokens.sessionExpiresAt());
             add(response, REFRESH, tokens.refreshToken(), refreshPath, untilExpiry);
@@ -114,18 +124,22 @@ public class AuthCookies {
         return null;
     }
 
-    /** True when the browser sent an auth cookie, i.e. the request could be a cross-site forgery. */
+    /**
+     * True when the browser sent an auth cookie, i.e. the request could be a cross-site forgery.
+     */
     public static boolean hasAuthCookie(HttpServletRequest request) {
         return read(request, ACCESS) != null || read(request, REFRESH) != null;
     }
 
-    private void add(HttpServletResponse response, String name, String value, String path, Duration maxAge) {
-        ResponseCookie.ResponseCookieBuilder cookie = ResponseCookie.from(name, value)
-                .httpOnly(true)
-                .secure(secure)
-                .sameSite(sameSite)
-                .path(path)
-                .maxAge(maxAge.isNegative() ? Duration.ZERO : maxAge);
+    private void add(
+            HttpServletResponse response, String name, String value, String path, Duration maxAge) {
+        ResponseCookie.ResponseCookieBuilder cookie =
+                ResponseCookie.from(name, value)
+                        .httpOnly(true)
+                        .secure(secure)
+                        .sameSite(sameSite)
+                        .path(path)
+                        .maxAge(maxAge.isNegative() ? Duration.ZERO : maxAge);
         if (!domain.isEmpty()) {
             cookie.domain(domain);
         }

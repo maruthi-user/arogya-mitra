@@ -1,9 +1,5 @@
 package in.arogyamitra.platform.entity.audit;
 
-import java.time.LocalDateTime;
-
-import org.hibernate.annotations.CreationTimestamp;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,14 +7,20 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
-/** One immutable line: who did what to which record. Entity-agnostic, so any module can write to it. */
+/**
+ * One immutable line: who did what to which record. Entity-agnostic, so any module can write to it.
+ */
 @Entity
-@Table(name = "AUDIT_LOGS", indexes = {
-        @Index(name = "IDX_AUDIT_ENTITY", columnList = "ENTITY_TYPE, ENTITY_ID"),
-        @Index(name = "IDX_AUDIT_ACTOR", columnList = "ACTOR_ID"),
-        @Index(name = "IDX_AUDIT_CREATED", columnList = "CREATED_AT")
-})
+@Table(
+        name = "AUDIT_LOGS",
+        indexes = {
+            @Index(name = "IDX_AUDIT_ENTITY", columnList = "ENTITY_TYPE, ENTITY_ID"),
+            @Index(name = "IDX_AUDIT_ACTOR", columnList = "ACTOR_ID"),
+            @Index(name = "IDX_AUDIT_CREATED", columnList = "CREATED_AT")
+        })
 public class AuditLog {
 
     @Id
@@ -48,10 +50,14 @@ public class AuditLog {
     @Column(name = "CREATED_AT", updatable = false)
     private LocalDateTime createdAt;
 
-    protected AuditLog() {
-    }
+    protected AuditLog() {}
 
-    public AuditLog(String entityType, String entityId, String action, Long actorId, String actorName,
+    public AuditLog(
+            String entityType,
+            String entityId,
+            String action,
+            Long actorId,
+            String actorName,
             String details) {
         this.entityType = entityType;
         this.entityId = entityId;

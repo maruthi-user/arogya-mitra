@@ -1,11 +1,17 @@
 package in.arogyamitra.platform.service.auth;
 
+import in.arogyamitra.platform.entity.users.AppUser;
+import in.arogyamitra.platform.repository.users.AppUserRepository;
+import in.arogyamitra.platform.security.PermissionService;
+import in.arogyamitra.platform.security.RateLimiter;
+import in.arogyamitra.platform.service.auth.SessionService.IssuedTokens;
+import in.arogyamitra.platform.service.users.UserService;
+import in.arogyamitra.platform.spi.AuditEvent;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,19 +23,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import in.arogyamitra.platform.entity.users.AppUser;
-import in.arogyamitra.platform.repository.users.AppUserRepository;
-import in.arogyamitra.platform.security.PermissionService;
-import in.arogyamitra.platform.security.RateLimiter;
-import in.arogyamitra.platform.service.auth.SessionService.IssuedTokens;
-import in.arogyamitra.platform.service.users.UserService;
-import in.arogyamitra.platform.spi.AuditEvent;
-
 @Service
 public class AuthService {
 
-    public record LoginResult(IssuedTokens tokens, List<String> permissions) {
-    }
+    public record LoginResult(IssuedTokens tokens, List<String> permissions) {}
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     private static final String INVALID = "Invalid username or password.";
@@ -47,8 +44,13 @@ public class AuthService {
     private final Duration window;
     private final String dummyHash;
 
-    public AuthService(AppUserRepository users, UserService userService, PasswordEncoder encoder,
-            SessionService sessions, PermissionService permissions, RateLimiter rateLimiter,
+    public AuthService(
+            AppUserRepository users,
+            UserService userService,
+            PasswordEncoder encoder,
+            SessionService sessions,
+            PermissionService permissions,
+            RateLimiter rateLimiter,
             ApplicationEventPublisher events,
             @Value("${app.security.max-failed-attempts:5}") int maxFailedAttempts,
             @Value("${app.rate-limit.login.max-attempts:5}") int maxAttempts,
@@ -69,29 +71,44 @@ public class AuthService {
     }
 
     /**
-     * Checks the password and opens a new device session. Rate limited per IP + login name and per IP, before
-     * any password is checked. The failed-attempt counter must survive the exception, hence noRollbackFor.
+     * Checks the password and opens a new device session. Rate limited per IP + login name and per
+     * IP, before any password is checked. The failed-attempt counter must survive the exception,
+     * hence noRollbackFor.
      */
     @Transactional(noRollbackFor = org.springframework.security.core.AuthenticationException.class)
     public LoginResult login(String login, String password, String ip, String userAgent) {
-        String loginKey = "login:" + ip + ":" + (login == null ? "" : login.trim().toLowerCase(Locale.ROOT));
+        String loginKey =
+                "login:" + ip + ":" + (login == null ? "" : login.trim().toLowerCase(Locale.ROOT));
         rateLimiter.consume("login-ip:" + ip, maxAttemptsPerIp, window);
         rateLimiter.consume(loginKey, maxAttempts, window);
 
         AppUser user = userService.findByLogin(login).orElse(null);
         if (user == null) {
-            encoder.matches(password, dummyHash); // same work as a real check, so timing does not reveal unknown emails
+            encoder.matches(
+                    password,
+                    dummyHash); // same work as a real check, so timing does not reveal unknown
+            // emails
             log.warn("[SECURITY] Login failed for unknown login from {}", ip);
             throw new BadCredentialsException(INVALID);
         }
         if (user.getFailedAttempts() >= maxFailedAttempts) {
-            throw new LockedException("Account is locked after too many failed attempts. Ask an administrator to unlock it.");
+            throw new LockedException(
+                    "Account is locked after too many failed attempts. Ask an administrator to unlock it.");
         }
         if (!encoder.matches(password, user.getPassword())) {
             user.setFailedAttempts(user.getFailedAttempts() + 1);
             users.save(user);
-            log.warn("[SECURITY] Login failed for user {} from {} ({} failed)", user.getId(), ip, user.getFailedAttempts());
-            events.publishEvent(AuditEvent.of("User", user.getId(), "LOGIN_FAILED", Map.of("ip", String.valueOf(ip))));
+            log.warn(
+                    "[SECURITY] Login failed for user {} from {} ({} failed)",
+                    user.getId(),
+                    ip,
+                    user.getFailedAttempts());
+            events.publishEvent(
+                    AuditEvent.of(
+                            "User",
+                            user.getId(),
+                            "LOGIN_FAILED",
+                            Map.of("ip", String.valueOf(ip))));
             throw new BadCredentialsException(INVALID);
         }
         if (!user.isEnabled()) {
@@ -102,7 +119,8 @@ public class AuthService {
         user.setLastLoginAt(LocalDateTime.now());
         users.save(user);
         IssuedTokens tokens = sessions.open(user, ip, userAgent);
-        events.publishEvent(AuditEvent.of("User", user.getId(), "LOGIN", Map.of("ip", String.valueOf(ip))));
+        events.publishEvent(
+                AuditEvent.of("User", user.getId(), "LOGIN", Map.of("ip", String.valueOf(ip))));
         return new LoginResult(tokens, permissions.permissionsOf(user.getRole()));
     }
 }

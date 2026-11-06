@@ -1,29 +1,14 @@
-import {pharmacyRecords} from '../../components/data-display/record-tables.js';
-import { Card } from '../../components/data-display/card.js';
-import { DataTable } from '../../components/data-display/table.js';
-import { Button } from '../../components/ui/button.js';
-import { Input, Select } from '../../components/forms/field.js';
-import { SearchInput } from '../../components/forms/search-input.js';
-import { EmptyState } from '../../components/feedback/states.js';
-import { MEDICINES,VILLAGES } from '../../services/reference-catalog.js';
-import { LANG, lbl } from '../../i18n/index.js';
-import { escapeHtml as esc } from '../../utils/html.js';
-
-const when=value=>new Date(value).toLocaleString('en-IN',{timeZone:'Asia/Kolkata',dateStyle:'medium',timeStyle:'short'});
-const l=(te,en)=>LANG==='te'?te:en;
-const applicationLabel=s=>({pending:l('ఆమోదం కోసం వేచి ఉంది','Pending Approval'),approved:l('ఆమోదించారు','Approved'),rejected:l('తిరస్కరించారు','Rejected')}[s]||s);
-const badge=status=>`<span class="status-badge ${esc(status)}">${esc(applicationLabel(status).replaceAll('_',' '))}</span>`;
-export function createAdminPages({S,page,filter}){
-  const matches=value=>JSON.stringify(value).toLowerCase().includes((filter.query||'').toLowerCase());
-  const applicationDetails=app=>'<details><summary>'+l('సమర్పించిన వివరాలు','View submitted details')+'</summary><dl>'+[
-    ['name',l('పూర్తి పేరు','Full name')],['username',l('యూజర్‌నేమ్','Username')],['email',l('ఇమెయిల్','Email')],['phone',l('మొబైల్','Mobile')],['organization',l('సంస్థ','Organisation')],['businessType',l('వ్యాపార రకం','Business type')],['designation',l('అర్హత','Qualification')],['village',l('ప్రాంతం','Location')],['address',l('చిరునామా','Address')],['registrationId',l('లైసెన్స్ ID','License ID')],['submittedAt',l('పంపిన సమయం','Submitted')],['termsAcceptedAt',l('నిబంధనల అంగీకారం','Terms accepted')],['reviewReason',l('సమీక్ష కారణం','Review reason')]
-  ].filter(([key])=>app[key]!=null&&app[key]!=='').map(([key,label])=>'<dt>'+esc(label)+'</dt><dd>'+esc(key.endsWith('At')?when(app[key]):String(app[key]))+'</dd>').join('')+'</dl></details>';
-  const applicationActions=app=>applicationDetails(app)+Button({label:l('పత్రాలు','Documents'),action:'applicationDocuments',attrs:{'data-id':app.id}})+(S.documentPanel?.id===app.id?S.documentPanel.html:'')+(app.status==='pending'?`<div class="actions">${Button({label:l('ఆమోదించండి','Approve'),action:'reviewApplication',variant:'accent',attrs:{'data-id':app.id,'data-decision':'approved'}})}${Button({label:l('తిరస్కరించండి','Reject'),action:'reviewApplication',attrs:{'data-id':app.id,'data-decision':'rejected'}})}</div>`:badge(app.status));
+// Every admin workspace page is now a React page (react-app/pages.jsx). The legacy host renders nothing
+// for these screens; they stay registered so the legacy router still recognises them.
+const reactPage=()=>({voice:null,html:''});
+export function createAdminPages(){
   return {
-    adminApplications:()=>({voice:null,html:page(S.providerTab==='pending'?l('పెండింగ్ సేవాదారు ఆమోదాలు','Pending Provider Approvals'):l('సేవాదారు దరఖాస్తులు','Provider applications'),`<div class="care-toolbar">${Button({label:'Add provider',action:'go',variant:'accent',attrs:{'data-s':'register'}})}${Button({label:'Pending providers',action:'careProviderTab',attrs:{'data-id':'pending','aria-pressed':String(S.providerTab==='pending')}})}${Button({label:'All providers / applications',action:'careProviderTab',attrs:{'data-id':'','aria-pressed':String(!S.providerTab)}})}</div>`+DataTable({id:'provider-applications',caption:'Provider applications',emptyMessage:'No applications match your search.',rows:S.applications.filter(matches).filter(a=>!S.providerTab||a.status===S.providerTab),columns:[{key:'name',label:l('పేరు','Applicant')},{key:'username',label:l('యూజర్‌నేమ్','Username')},{key:'phone',label:l('మొబైల్','Mobile')},{key:'organization',label:'Organization'},{key:'email',label:'Email'},{label:'Business',render:a=>esc(a.businessType||'practitioner')},{key:'designation',label:'Clinical qualification'},{label:'Status',render:a=>badge(a.status)},{key:'submittedAt',label:'Submitted',render:a=>when(a.submittedAt)},{label:'Review',render:applicationActions}]}))}),
-    adminNotifications:()=>({voice:null,html:page('Email notifications',`<div class="inline-note">Messages are delivered to your configured SMTP server. In local development, open Mailpit at <a href="http://localhost:8025" target="_blank" rel="noopener">localhost:8025</a>. Queued or failed messages have not been delivered.</div>`+DataTable({id:'email-delivery',caption:'Notification delivery',emptyMessage:'No notifications yet.',rows:S.notifications,columns:[{key:'recipient',label:'Recipient'},{key:'subject',label:'Subject'},{label:'Status',render:n=>badge(n.status)},{key:'attempts',label:'Attempts'},{key:'updatedAt',label:'Updated',render:n=>when(n.updatedAt)},{label:'Action',render:n=>n.status==='failed'?Button({label:'Retry',action:'retryNotification',attrs:{'data-id':n.id}}):'—'}]}))}),
-    adminAudit:()=>({voice:null,html:page('Audit history',DataTable({id:'audit-history',caption:'Administrative decisions',emptyMessage:'No administrative decisions recorded.',rows:S.audit,columns:[{key:'action',label:'Action'},{key:'actorId',label:'Administrator'},{key:'resourceId',label:'Application'},{key:'detail',label:'Reason / instructions'},{key:'createdAt',label:'Time',render:a=>when(a.createdAt)}]}))}),
-    adminPharmacies:()=>({voice:null,html:page('Pharmacy directory',`<section class="panel"><h2>Add a pharmacy</h2><p class="muted">Only add a pharmacy with accurate contact details and permission to list its stock.</p><form class="form-grid" data-form-action="createPharmacy">${Input({id:'pharmacyName',label:'Pharmacy name',attrs:{required:true,maxlength:100}})}${Input({id:'pharmacyPhone',label:'Phone',type:'tel',attrs:{required:true,pattern:'(\\+91)?[6-9][0-9]{9}'}})}${Select({id:'pharmacyVillage',label:'Village',options:VILLAGES.map(v=>({value:v.id,label:lbl(v)}))})}${Button({label:'Add pharmacy',variant:'accent',attrs:{type:'submit'}})}</form></section>${pharmacyRecords(S.pharmacies,p=>Card({title:p.name,body:`<p>${esc(p.phone)} · ${esc(p.village)}</p><div class="stock-list">${MEDICINES.map(m=>`<div><span>${esc(lbl(m))}</span><button class="stock-toggle ${p.stock[m.id]?'available':''}" data-a="adminStock" data-id="${esc(p.id)}" data-med="${m.id}" data-available="${!p.stock[m.id]}" aria-pressed="${!!p.stock[m.id]}">${p.stock[m.id]?'In stock':'Not in stock'}</button></div>`).join('')}</div>`}))}`)}),
-    adminRequests:()=>({voice:null,html:page('Medicine inquiries',DataTable({id:'medicine-inquiries',caption:'Pharmacy-assigned inquiries',emptyMessage:'No medicine inquiries yet.',rows:S.medicineRequests,columns:[{key:'patientName',label:'Patient'},{key:'pharmacyName',label:'Pharmacy'},{label:'Medicine',render:r=>esc(lbl(MEDICINES.find(m=>m.id===r.medicineId)||{en:r.medicineId}))},{key:'message',label:'Message'},{label:'Status',render:r=>badge(r.status)},{label:'Action',render:r=>r.status==='resolved'?'—':`<div class="actions">${r.status==='requested'?Button({label:'Contacted',action:'updateMedicineRequest',attrs:{'data-id':r.id,'data-status':'contacted'}}):''}${Button({label:'Resolved',action:'updateMedicineRequest',attrs:{'data-id':r.id,'data-status':'resolved'}})}</div>`}]}))})
+    adminApplications:reactPage,
+    verifierQueue:reactPage,
+    adminVerifiers:reactPage,
+    adminNotifications:reactPage,
+    adminAudit:reactPage,
+    adminPharmacies:reactPage,
+    adminRequests:reactPage
   };
 }

@@ -1,8 +1,10 @@
 package in.arogyamitra.platform.controller.files;
 
+import in.arogyamitra.platform.config.ConditionalOnAppModule;
+import in.arogyamitra.platform.entity.files.FileAttachment;
+import in.arogyamitra.platform.service.files.AttachmentService;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -20,20 +22,30 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import in.arogyamitra.platform.config.ConditionalOnAppModule;
-import in.arogyamitra.platform.entity.files.FileAttachment;
-import in.arogyamitra.platform.service.files.AttachmentService;
-
 @RestController
 @RequestMapping("/api/v1/files")
 @ConditionalOnAppModule("files")
 public class FileController {
 
-    public record AttachmentDto(Long id, String ownerType, String ownerId, String fileName, String contentType,
-            long sizeBytes, Long uploadedBy, LocalDateTime createdAt) {
+    public record AttachmentDto(
+            Long id,
+            String ownerType,
+            String ownerId,
+            String fileName,
+            String contentType,
+            long sizeBytes,
+            Long uploadedBy,
+            LocalDateTime createdAt) {
         static AttachmentDto from(FileAttachment a) {
-            return new AttachmentDto(a.getId(), a.getOwnerType(), a.getOwnerId(), a.getFileName(),
-                    a.getContentType(), a.getSizeBytes(), a.getUploadedBy(), a.getCreatedAt());
+            return new AttachmentDto(
+                    a.getId(),
+                    a.getOwnerType(),
+                    a.getOwnerId(),
+                    a.getFileName(),
+                    a.getContentType(),
+                    a.getSizeBytes(),
+                    a.getUploadedBy(),
+                    a.getCreatedAt());
         }
     }
 
@@ -46,7 +58,9 @@ public class FileController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("@perm.has('files.use')")
-    public AttachmentDto upload(@RequestParam String ownerType, @RequestParam String ownerId,
+    public AttachmentDto upload(
+            @RequestParam String ownerType,
+            @RequestParam String ownerId,
             @RequestParam("file") MultipartFile file) {
         return AttachmentDto.from(attachments.upload(ownerType, ownerId, file));
     }
@@ -65,8 +79,12 @@ public class FileController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(a.getContentType()))
                 .contentLength(a.getSizeBytes())
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.attachment().filename(a.getFileName()).build().toString())
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename(a.getFileName())
+                                .build()
+                                .toString())
                 .header("X-Content-Type-Options", "nosniff")
                 .body(new InputStreamResource(d.content()));
     }
